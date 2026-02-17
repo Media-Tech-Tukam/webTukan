@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>¡Gracias! - Tukan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            color: #fff;
+        }
+
+        .container {
+            text-align: center;
+            max-width: 800px;
+            padding: 40px;
+        }
+
+        h1 {
+            font-size: 48px;
+            color: #FFD700;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px #FFD700;
+        }
+
+        .emoji {
+            font-size: 80px;
+            margin: 30px 0;
+            animation: bounce 2s infinite;
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+
+        p {
+            font-size: 20px;
+            line-height: 1.6;
+            color: #aaa;
+            margin: 20px 0;
+        }
+
+        .stats {
+            background: rgba(0, 217, 255, 0.1);
+            border: 2px solid #00d9ff;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 40px 0;
+        }
+
+        .stats h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #333;
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 30px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.5);
+        }
+
+        .btn-secondary {
+            background: #444;
+            margin-left: 15px;
+        }
+
+        .btn-secondary:hover {
+            background: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="emoji">🎉</div>
+        <h1>¡Felicitaciones!</h1>
+        <p>Has completado el nivel de Tukan.</p>
+        <p>Gracias por explorar nuestra experiencia gamificada.</p>
+
+        <div class="stats" id="stats">
+            <h2>📊 Tus Estadísticas Globales</h2>
+            <div class="stat-item">
+                <span>🎯 Secciones visitadas:</span>
+                <span id="total-sections">-</span>
+            </div>
+            <div class="stat-item">
+                <span>🏆 Niveles completados:</span>
+                <span id="total-levels">-</span>
+            </div>
+            <div class="stat-item">
+                <span>⏱️ Tiempo total:</span>
+                <span id="total-time">-</span>
+            </div>
+            <div class="stat-item">
+                <span>💀 Caídas totales:</span>
+                <span id="total-deaths">-</span>
+            </div>
+            <div class="stat-item">
+                <span>🎖️ Logros desbloqueados:</span>
+                <span id="total-achievements">-</span>
+            </div>
+        </div>
+
+        <a href="./index.html" class="btn">🔄 Jugar de Nuevo</a>
+        <button onclick="resetProgress()" class="btn btn-secondary">🗑️ Borrar Progreso</button>
+    </div>
+
+    <script type="module">
+        // Cargar estadísticas globales
+        function loadStats() {
+            const saved = localStorage.getItem('tukan_game_progress');
+            if (saved) {
+                const data = JSON.parse(saved);
+                
+                document.getElementById('total-sections').textContent = data.totalSectionsVisited || 0;
+                document.getElementById('total-levels').textContent = data.totalLevelsCompleted || 0;
+                
+                // Formatear tiempo
+                const totalMinutes = Math.floor((data.totalTimeSpent || 0) / 60);
+                const totalSeconds = (data.totalTimeSpent || 0) % 60;
+                document.getElementById('total-time').textContent = 
+                    `${totalMinutes}:${totalSeconds.toString().padStart(2, '0')}`;
+                
+                document.getElementById('total-deaths').textContent = data.totalDeaths || 0;
+                document.getElementById('total-achievements').textContent = 
+                    (data.achievements?.length || 0) + '/20';
+            } else {
+                document.getElementById('stats').innerHTML = 
+                    '<p style="color: #aaa;">No hay estadísticas guardadas</p>';
+            }
+        }
+
+        window.resetProgress = function() {
+            if (confirm('¿Estás seguro? Se borrará TODO el progreso guardado.')) {
+                localStorage.removeItem('tukan_game_progress');
+                alert('Progreso borrado. ¡Vuelve a jugar desde cero!');
+                loadStats();
+            }
+        };
+
+        loadStats();
+    </script>
+</body>
+</html>

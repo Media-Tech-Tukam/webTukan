@@ -1,0 +1,544 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    overflow: hidden;
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+#game-container {
+    position: relative;
+    width: 1100px;
+    height: 600px; /* Altura inicial, se actualiza con JS */
+    margin: 0 auto;
+    box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
+    border: 2px solid #00d9ff;
+    border-radius: 10px;
+    overflow: hidden;
+    transition: height 0.3s ease;
+}
+
+/* Capa HTML - Contenido web detrás */
+#html-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 1100px;
+    height: 3000px;
+    z-index: 1;
+    background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
+    /* Transición suave para efecto parallax */
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+}
+
+/* Bloques de texto estilo maqueta */
+.text-block {
+    background: white;
+    border: 3px solid #000;
+    padding: 25px;
+    max-width: 350px;
+    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+}
+
+.text-block h2 {
+    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-size: 28px;
+    text-transform: uppercase;
+    margin: 0 0 15px 0;
+    color: #000;
+}
+
+.text-block p {
+    font-family: 'Arial', sans-serif;
+    font-size: 13px;
+    line-height: 1.6;
+    color: #333;
+    margin: 0;
+}
+
+/* Canvas encima - transparente */
+canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+    /* El canvas será transparente por defecto */
+    pointer-events: auto;
+}
+
+/* HUD - Interfaz superior */
+.hud {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(calc(-50vh + 30px));
+    width: 1100px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 15px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border-radius: 10px 10px 0 0;
+    border: 2px solid #00d9ff;
+    border-bottom: none;
+}
+
+.progress-display {
+    display: flex;
+    align-items: center;
+    padding: 5px 15px;
+    background: rgba(0, 217, 255, 0.1);
+    border-radius: 20px;
+    border: 1px solid #00d9ff;
+}
+
+#progress-counter {
+    transition: all 0.3s ease;
+}
+
+.logo {
+    font-size: 28px;
+    font-weight: bold;
+    color: #00d9ff;
+    text-shadow: 0 0 10px #00d9ff;
+}
+
+.progress {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.progress-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.checkpoint {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid #666;
+    background: #333;
+    transition: all 0.3s;
+}
+
+.checkpoint.visited {
+    background: #00d9ff;
+    border-color: #00d9ff;
+    box-shadow: 0 0 10px #00d9ff;
+}
+
+/* Modal mejorado */
+.modal {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+    padding: 0;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+    z-index: 1000;
+    max-width: 700px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    border: 2px solid #00d9ff;
+}
+
+.modal.active {
+    display: block;
+    animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+.modal-header {
+    background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
+    padding: 25px 30px;
+    color: white;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.modal-header h2 {
+    margin: 0;
+    font-size: 28px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.btn-close-header {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s;
+    line-height: 1;
+}
+
+.btn-close-header:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.modal-content {
+    padding: 30px;
+    color: #e0e0e0;
+    max-height: 50vh;
+    overflow-y: auto;
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: #2d2d2d;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background: #00d9ff;
+    border-radius: 4px;
+}
+
+.modal-content h3 {
+    color: #00d9ff;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+.modal-content ul {
+    list-style: none;
+    padding-left: 0;
+}
+
+.modal-content li {
+    padding: 8px 0;
+    padding-left: 25px;
+    position: relative;
+}
+
+.modal-content li:before {
+    content: "▶";
+    position: absolute;
+    left: 0;
+    color: #00d9ff;
+}
+
+.game-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.game-card {
+    background: #333;
+    padding: 15px;
+    border-radius: 10px;
+    border: 2px solid #444;
+    transition: all 0.3s;
+    cursor: pointer;
+}
+
+.game-card:hover {
+    border-color: #00d9ff;
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
+}
+
+.game-card h4 {
+    color: #00d9ff;
+    margin-bottom: 8px;
+}
+
+.game-card p {
+    font-size: 13px;
+    color: #aaa;
+}
+
+.contact-form {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.contact-form input,
+.contact-form textarea {
+    padding: 12px;
+    background: #333;
+    border: 2px solid #444;
+    border-radius: 8px;
+    color: #fff;
+    font-size: 14px;
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: #00d9ff;
+}
+
+.btn-primary {
+    padding: 12px 30px;
+    background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    transition: all 0.3s;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+}
+
+.btn-close {
+    margin-top: 15px;
+    padding: 10px 25px;
+    background: #444;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.btn-close:hover {
+    background: #555;
+}
+
+.overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.8);
+    z-index: 999;
+    backdrop-filter: blur(5px);
+}
+
+.overlay.active {
+    display: block;
+}
+
+/* Tooltip para objetos */
+.tooltip {
+    position: fixed;
+    background: rgba(0, 0, 0, 0.9);
+    color: #00d9ff;
+    padding: 8px 15px;
+    border-radius: 5px;
+    font-size: 14px;
+    pointer-events: none;
+    z-index: 50;
+    display: none;
+    border: 1px solid #00d9ff;
+}
+
+.instructions {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) translateY(calc(50vh - 30px));
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 15px 30px;
+    border-radius: 0 0 10px 10px;
+    font-size: 16px;
+    z-index: 100;
+    backdrop-filter: blur(10px);
+    border: 2px solid #00d9ff;
+    border-top: none;
+    width: 1100px;
+    text-align: center;
+}
+
+/* Editor de Tiles */
+#editor-ui {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+}
+
+/* Editor HTML */
+#html-editor-ui {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    z-index: 1000;
+}
+
+.editor-panel {
+    background: rgba(0, 0, 0, 0.9);
+    padding: 20px;
+    border-radius: 15px;
+    border: 2px solid #00d9ff;
+    box-shadow: 0 10px 40px rgba(0, 217, 255, 0.3);
+    min-width: 280px;
+}
+
+.editor-panel h3 {
+    margin: 0 0 20px 0;
+    color: #00d9ff;
+    font-size: 20px;
+    text-shadow: 0 0 10px #00d9ff;
+}
+
+.editor-section {
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+}
+
+.editor-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.editor-section label {
+    display: block;
+    color: #aaa;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.editor-section input[type="number"],
+.editor-section input[type="color"],
+.editor-section select {
+    width: 100%;
+    padding: 8px;
+    background: #2d2d2d;
+    border: 1px solid #444;
+    border-radius: 5px;
+    color: #fff;
+    font-size: 14px;
+    margin-bottom: 10px;
+}
+
+.editor-section input[type="checkbox"] {
+    margin-right: 8px;
+}
+
+.editor-btn {
+    padding: 8px 15px;
+    background: #444;
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    margin-right: 10px;
+    transition: all 0.3s;
+}
+
+.editor-btn:hover {
+    background: #555;
+    transform: translateY(-2px);
+}
+
+.editor-btn-primary {
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    width: 100%;
+    transition: all 0.3s;
+}
+
+.editor-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+}
+
+.editor-section small {
+    color: #888;
+    line-height: 1.6;
+}
+
+.editor-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+}
+
+#selected-props {
+    background: rgba(255, 215, 0, 0.1);
+    border: 1px solid #FFD700;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+#selected-props label {
+    color: #FFD700;
+}
+
+/* Animaciones para logros */
+@keyframes slideIn {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOut {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+    to {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+}
+

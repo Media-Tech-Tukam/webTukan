@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tukan - Diseño de Juegos para Empresas</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- HUD Superior -->
+    <div class="hud">
+        <div class="logo">🎮 TUKAN</div>
+        <div class="progress-display">
+            <span style="color: #aaa; font-size: 14px;">Progreso:</span>
+            <span id="progress-counter" style="color: #00d9ff; font-size: 20px; font-weight: bold; margin-left: 8px;">0/0</span>
+        </div>
+        <div class="progress">
+            <div class="progress-item">
+                <div class="checkpoint" id="check-inicio"></div>
+                <span>Inicio</span>
+            </div>
+            <div class="progress-item">
+                <div class="checkpoint" id="check-servicios"></div>
+                <span>Servicios</span>
+            </div>
+            <div class="progress-item">
+                <div class="checkpoint" id="check-portafolio"></div>
+                <span>Portafolio</span>
+            </div>
+            <div class="progress-item">
+                <div class="checkpoint" id="check-nosotros"></div>
+                <span>Nosotros</span>
+            </div>
+            <div class="progress-item">
+                <div class="checkpoint" id="check-contacto"></div>
+                <span>Contacto</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instrucciones -->
+    <div class="instructions">
+        🎯 Flechas ← → para moverte, ↑ para saltar. 🌿 En lianas: ↑ ↓ para trepar, Espacio para saltar
+        <br><span style="font-size: 12px; opacity: 0.7;">Presiona <strong>E</strong> para abrir el Editor de Niveles</span>
+    </div>
+
+    <!-- Contenedor del juego -->
+    <div id="game-container">
+        <!-- Capa HTML - Contenido web detrás -->
+        <div id="html-layer">
+            <!-- Bloque de texto 1 - Superior -->
+            <div class="text-block" style="position: absolute; top: 200px; left: 50px;">
+                <h2>UN BUEN TITULO</h2>
+                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
+            </div>
+
+            <!-- Bloque de texto 2 - Medio -->
+            <div class="text-block" style="position: absolute; top: 1500px; left: 700px;">
+                <h2>OTRO BUEN TITULO</h2>
+                <p>Sed diam amet, lobortis sed, dignissim sit amet, condimentum in, dupien. Pellentesque nec lacinia sit amet orci bibendum dolor vel, laoreet.</p>
+            </div>
+
+            <!-- Logo Tukan - Centro -->
+            <div class="logo-tukan" style="position: absolute; top: 1200px; left: 350px;">
+                <div style="font-size: 72px; font-weight: bold; text-align: center;">
+                    <div style="color: #FFD700;">🎮</div>
+                    <div style="font-family: Impact, sans-serif; color: #000;">TUKAN</div>
+                    <div style="font-size: 18px; color: #666;">MEDIA TECH</div>
+                </div>
+            </div>
+
+            <!-- Bloque de texto 3 - Inferior -->
+            <div class="text-block" style="position: absolute; top: 2700px; left: 400px;">
+                <h2>CONTENIDO FINAL</h2>
+                <p>Vivamus ut amet sem vitae tellus ultrices. Integer tincidunt lacinia mauris sit amet ante. Cras varius lacus id magna bibendum lacinia.</p>
+            </div>
+        </div>
+
+        <!-- Canvas del juego encima (transparente) -->
+        <canvas id="gameCanvas"></canvas>
+    </div>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
+
+    <!-- Modal -->
+    <div class="overlay" id="overlay" onclick="closeModal()"></div>
+    <div class="modal" id="modal">
+        <div class="modal-header">
+            <h2 id="modalTitle"></h2>
+            <button class="btn-close-header" onclick="closeModal()">✕</button>
+        </div>
+        <div class="modal-content" id="modalContent"></div>
+    </div>
+
+    <script type="module" src="js/game.js"></script>
+    <script type="module" src="js/tile-editor.js"></script>
+</body>
+</html>
