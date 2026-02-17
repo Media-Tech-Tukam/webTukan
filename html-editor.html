@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HTML Editor - Tukan</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #1a1a2e;
+            color: #fff;
+            overflow: hidden;
+        }
+
+        .editor-container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Panel lateral */
+        .sidebar {
+            width: 320px;
+            background: rgba(0, 0, 0, 0.9);
+            border-right: 2px solid #00d9ff;
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+            font-size: 24px;
+            text-shadow: 0 0 10px #00d9ff;
+        }
+
+        .section {
+            margin-bottom: 25px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid #333;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section h3 {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 12px;
+            background: #444;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            font-size: 14px;
+            margin-bottom: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #555;
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
+            font-weight: bold;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.4);
+        }
+
+        .btn-danger {
+            background: #ff4444;
+        }
+
+        .btn-danger:hover {
+            background: #ff6666;
+        }
+
+        label {
+            display: block;
+            color: #aaa;
+            font-size: 13px;
+            margin-bottom: 5px;
+            margin-top: 10px;
+        }
+
+        input[type="text"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 8px;
+            background: #2d2d2d;
+            border: 1px solid #444;
+            border-radius: 5px;
+            color: #fff;
+            font-size: 14px;
+            font-family: 'Arial', sans-serif;
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .properties-panel {
+            background: rgba(255, 215, 0, 0.1);
+            border: 1px solid #FFD700;
+            border-radius: 5px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .properties-panel h3 {
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        /* Área de trabajo */
+        .workspace {
+            flex: 1;
+            position: relative;
+            overflow: auto;
+            background: #16213e;
+        }
+
+        .canvas-container {
+            position: relative;
+            width: 1100px;
+            height: 3000px;
+            background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
+            margin: 20px auto;
+            box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            background-image: 
+                repeating-linear-gradient(0deg, rgba(0, 217, 255, 0.1) 0px, transparent 1px, transparent 25px),
+                repeating-linear-gradient(90deg, rgba(0, 217, 255, 0.1) 0px, transparent 1px, transparent 25px);
+            background-size: 25px 25px;
+        }
+
+        /* Elementos HTML en el editor */
+        .html-element {
+            position: absolute;
+            border: 2px dashed #00d9ff;
+            cursor: move;
+            background: rgba(0, 217, 255, 0.05);
+        }
+
+        .html-element.selected {
+            border: 3px solid #FFD700;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .html-element.text-block {
+            background: white;
+            border: 3px solid #000;
+            padding: 25px;
+            box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+        }
+
+        .html-element.text-block h2 {
+            font-family: 'Impact', 'Arial Black', sans-serif;
+            font-size: 28px;
+            text-transform: uppercase;
+            margin: 0 0 15px 0;
+            color: #000;
+        }
+
+        .html-element.text-block p {
+            font-family: 'Arial', sans-serif;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            margin: 0;
+        }
+
+        .element-label {
+            position: absolute;
+            top: -25px;
+            left: 0;
+            background: #00d9ff;
+            color: #000;
+            padding: 3px 8px;
+            font-size: 11px;
+            font-weight: bold;
+            border-radius: 3px;
+        }
+
+        .selected .element-label {
+            background: #FFD700;
+        }
+
+        .resize-handle {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 15px;
+            height: 15px;
+            background: #00d9ff;
+            cursor: nwse-resize;
+            display: none;
+        }
+
+        .selected .resize-handle {
+            display: block;
+        }
+
+        /* Info bar superior */
+        .info-bar {
+            position: fixed;
+            top: 0;
+            left: 320px;
+            right: 0;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px 30px;
+            border-bottom: 2px solid #00d9ff;
+            z-index: 1000;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .info-bar h1 {
+            color: #00d9ff;
+            font-size: 20px;
+            margin: 0;
+        }
+
+        .info-text {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        /* Modal de exportación */
+        .export-modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            border: 2px solid #00d9ff;
+            z-index: 2000;
+            max-width: 90%;
+            max-height: 90%;
+            overflow: auto;
+        }
+
+        .export-modal.active {
+            display: block;
+        }
+
+        .export-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 1999;
+        }
+
+        .export-overlay.active {
+            display: block;
+        }
+
+        .export-modal h2 {
+            color: #00d9ff;
+            margin-bottom: 20px;
+        }
+
+        .export-modal textarea {
+            width: 100%;
+            height: 400px;
+            font-family: monospace;
+            font-size: 12px;
+            background: #2d2d2d;
+            color: #0f0;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="editor-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>🌐 HTML Editor</h2>
+
+            <!-- Agregar elementos -->
+            <div class="section">
+                <h3>Agregar Elemento</h3>
+                <button class="btn" onclick="editor.addElement('text-block')">📝 Bloque de Texto</button>
+                <button class="btn" onclick="editor.addElement('image')">🖼️ Imagen</button>
+                <button class="btn" onclick="editor.addElement('logo')">🎯 Logo/Icono</button>
+                <button class="btn" onclick="editor.addElement('html')">⚙️ HTML Libre</button>
+            </div>
+
+            <!-- Propiedades del elemento seleccionado -->
+            <div class="section" id="properties-section" style="display: none;">
+                <h3>Propiedades</h3>
+                <div class="properties-panel">
+                    <label>X:</label>
+                    <input type="number" id="prop-x" step="25" onchange="editor.updateSelectedElement()">
+                    
+                    <label>Y:</label>
+                    <input type="number" id="prop-y" step="25" onchange="editor.updateSelectedElement()">
+                    
+                    <label>Ancho:</label>
+                    <input type="number" id="prop-width" step="25" onchange="editor.updateSelectedElement()">
+                    
+                    <label>Alto:</label>
+                    <input type="number" id="prop-height" step="25" onchange="editor.updateSelectedElement()">
+
+                    <!-- Propiedades específicas por tipo -->
+                    <div id="text-props" class="hidden">
+                        <label>Título:</label>
+                        <input type="text" id="prop-title" onchange="editor.updateSelectedElement()">
+                        
+                        <label>Contenido:</label>
+                        <textarea id="prop-content" onchange="editor.updateSelectedElement()"></textarea>
+                    </div>
+
+                    <div id="image-props" class="hidden">
+                        <label>URL de la imagen:</label>
+                        <input type="text" id="prop-image-url" onchange="editor.updateSelectedElement()">
+                        
+                        <label>Alt text:</label>
+                        <input type="text" id="prop-alt" onchange="editor.updateSelectedElement()">
+                    </div>
+
+                    <div id="logo-props" class="hidden">
+                        <label>Emoji/Icono:</label>
+                        <input type="text" id="prop-icon" onchange="editor.updateSelectedElement()">
+                        
+                        <label>Texto:</label>
+                        <input type="text" id="prop-text" onchange="editor.updateSelectedElement()">
+                        
+                        <label>Subtítulo:</label>
+                        <input type="text" id="prop-subtitle" onchange="editor.updateSelectedElement()">
+                    </div>
+
+                    <div id="html-props" class="hidden">
+                        <label>HTML:</label>
+                        <textarea id="prop-html" onchange="editor.updateSelectedElement()"></textarea>
+                    </div>
+
+                    <button class="btn btn-danger" onclick="editor.deleteSelected()" style="margin-top: 15px;">🗑️ Eliminar</button>
+                </div>
+            </div>
+
+            <!-- Opciones -->
+            <div class="section">
+                <h3>Opciones</h3>
+                <label>
+                    <input type="checkbox" id="snap-grid" checked>
+                    Ajustar a cuadrícula (25px)
+                </label>
+                <label>
+                    <input type="checkbox" id="show-grid" checked onchange="editor.toggleGrid()">
+                    Mostrar cuadrícula
+                </label>
+            </div>
+
+            <!-- Exportar -->
+            <div class="section">
+                <button class="btn btn-primary" onclick="editor.exportHTML()">📦 Exportar HTML</button>
+                <button class="btn" onclick="editor.clearAll()">🗑️ Limpiar Todo</button>
+            </div>
+
+            <!-- Info -->
+            <div class="section">
+                <h3>Controles</h3>
+                <p style="font-size: 12px; color: #888; line-height: 1.6;">
+                    <strong>Click:</strong> Seleccionar<br>
+                    <strong>Arrastrar:</strong> Mover<br>
+                    <strong>Arrastrar esquina:</strong> Redimensionar<br>
+                    <strong>Delete:</strong> Eliminar selección<br>
+                    <strong>Ctrl+Z:</strong> Deshacer (próximamente)
+                </p>
+            </div>
+        </div>
+
+        <!-- Workspace -->
+        <div class="workspace">
+            <div class="info-bar">
+                <h1>🌐 Editor de Contenido HTML</h1>
+                <div class="info-text">
+                    <span id="element-count">0 elementos</span> | 
+                    <span id="cursor-pos">X: 0, Y: 0</span>
+                </div>
+            </div>
+
+            <div style="padding-top: 60px;">
+                <div class="canvas-container" id="canvas">
+                    <div class="grid-overlay" id="grid-overlay"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de exportación -->
+    <div class="export-overlay" id="export-overlay" onclick="closeExportModal()"></div>
+    <div class="export-modal" id="export-modal">
+        <h2>📦 Código HTML Generado</h2>
+        <p style="color: #aaa; margin-bottom: 15px;">
+            Copia este código y pégalo dentro del <code>&lt;div id="html-layer"&gt;</code> en tu index.html
+        </p>
+        <textarea id="export-code" readonly></textarea>
+        <button class="btn btn-primary" onclick="copyCode()" style="margin-top: 15px;">📋 Copiar al Portapapeles</button>
+        <button class="btn" onclick="closeExportModal()" style="margin-top: 15px;">Cerrar</button>
+    </div>
+
+    <script>
+        const editor = {
+            elements: [],
+            selectedElement: null,
+            dragging: false,
+            resizing: false,
+            dragStart: { x: 0, y: 0 },
+            elementIdCounter: 0,
+
+            init() {
+                const canvas = document.getElementById('canvas');
+                
+                // Mouse events
+                canvas.addEventListener('mousedown', (e) => this.onMouseDown(e));
+                canvas.addEventListener('mousemove', (e) => this.onMouseMove(e));
+                canvas.addEventListener('mouseup', (e) => this.onMouseUp(e));
+                
+                // Keyboard events
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Delete' && this.selectedElement) {
+                        this.deleteSelected();
+                    }
+                });
+
+                // Track mouse position
+                canvas.addEventListener('mousemove', (e) => {
+                    const rect = canvas.getBoundingClientRect();
+                    const x = Math.round((e.clientX - rect.left) / 25) * 25;
+                    const y = Math.round((e.clientY - rect.top) / 25) * 25;
+                    document.getElementById('cursor-pos').textContent = `X: ${x}, Y: ${y}`;
+                });
+
+                this.updateElementCount();
+            },
+
+            addElement(type) {
+                // Calcular posición visible actual (centro del scroll)
+                const workspace = document.querySelector('.workspace');
+                const scrollTop = workspace.scrollTop;
+                const viewportHeight = workspace.clientHeight;
+                const centerY = scrollTop + (viewportHeight / 2);
+
+                const element = {
+                    id: `element-${this.elementIdCounter++}`,
+                    type: type,
+                    x: 400, // Centrado horizontalmente aproximado
+                    y: Math.max(100, centerY - 100), // Centro vertical del viewport
+                    width: 350,
+                    height: 200
+                };
+
+                // Valores por defecto según tipo
+                if (type === 'text-block') {
+                    element.title = 'UN BUEN TITULO';
+                    element.content = 'In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.';
+                } else if (type === 'image') {
+                    element.width = 400;
+                    element.height = 300;
+                    element.url = 'https://via.placeholder.com/400x300';
+                    element.alt = 'Imagen descriptiva';
+                } else if (type === 'logo') {
+                    element.width = 200;
+                    element.height = 200;
+                    element.icon = '🎮';
+                    element.text = 'TUKAN';
+                    element.subtitle = 'MEDIA TECH';
+                } else if (type === 'html') {
+                    element.html = '<div style="padding: 20px; background: #fff; border: 2px solid #000;">\n  <h3>Contenido personalizado</h3>\n  <p>Escribe tu HTML aquí</p>\n</div>';
+                }
+
+                this.elements.push(element);
+                this.renderElement(element);
+                this.updateElementCount();
+            },
+
+            renderElement(element) {
+                const div = document.createElement('div');
+                div.className = 'html-element ' + element.type;
+                div.id = element.id;
+                div.style.left = element.x + 'px';
+                div.style.top = element.y + 'px';
+                div.style.width = element.width + 'px';
+                div.style.height = element.height + 'px';
+
+                // Label
+                const label = document.createElement('div');
+                label.className = 'element-label';
+                label.textContent = element.type.replace('-', ' ').toUpperCase();
+                div.appendChild(label);
+
+                // Resize handle
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                div.appendChild(handle);
+
+                // Contenido según tipo
+                if (element.type === 'text-block') {
+                    div.innerHTML += `<h2>${element.title}</h2><p>${element.content}</p>`;
+                    div.classList.add('text-block');
+                } else if (element.type === 'image') {
+                    div.innerHTML += `<img src="${element.url}" alt="${element.alt}" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+                } else if (element.type === 'logo') {
+                    div.innerHTML += `
+                        <div style="font-size: ${element.height * 0.3}px; font-weight: bold; text-align: center;">
+                            <div style="color: #FFD700;">${element.icon}</div>
+                            <div style="font-family: Impact, sans-serif; color: #000;">${element.text}</div>
+                            <div style="font-size: ${element.height * 0.1}px; color: #666;">${element.subtitle}</div>
+                        </div>
+                    `;
+                } else if (element.type === 'html') {
+                    div.innerHTML += element.html;
+                }
+
+                document.getElementById('canvas').appendChild(div);
+            },
+
+            onMouseDown(e) {
+                const target = e.target.closest('.html-element');
+                
+                if (target) {
+                    const element = this.elements.find(el => el.id === target.id);
+                    if (element) {
+                        this.selectElement(element);
+                        
+                        const rect = target.getBoundingClientRect();
+                        const canvas = document.getElementById('canvas').getBoundingClientRect();
+                        
+                        this.dragStart = {
+                            x: e.clientX - rect.left,
+                            y: e.clientY - rect.top,
+                            elementX: element.x,
+                            elementY: element.y
+                        };
+
+                        // Check si es resize
+                        if (e.target.classList.contains('resize-handle')) {
+                            this.resizing = true;
+                        } else {
+                            this.dragging = true;
+                        }
+                    }
+                } else if (e.target.id === 'canvas' || e.target.classList.contains('grid-overlay')) {
+                    this.deselectAll();
+                }
+            },
+
+            onMouseMove(e) {
+                if (!this.selectedElement) return;
+
+                const canvas = document.getElementById('canvas').getBoundingClientRect();
+                const snapToGrid = document.getElementById('snap-grid').checked;
+
+                if (this.dragging) {
+                    let newX = e.clientX - canvas.left - this.dragStart.x;
+                    let newY = e.clientY - canvas.top - this.dragStart.y;
+
+                    if (snapToGrid) {
+                        newX = Math.round(newX / 25) * 25;
+                        newY = Math.round(newY / 25) * 25;
+                    }
+
+                    this.selectedElement.x = Math.max(0, Math.min(newX, 1100 - this.selectedElement.width));
+                    this.selectedElement.y = Math.max(0, Math.min(newY, 3000 - this.selectedElement.height));
+
+                    this.updateElementDOM(this.selectedElement);
+                    this.updatePropertiesPanel();
+                }
+
+                if (this.resizing) {
+                    let newWidth = e.clientX - canvas.left - this.selectedElement.x;
+                    let newHeight = e.clientY - canvas.top - this.selectedElement.y;
+
+                    if (snapToGrid) {
+                        newWidth = Math.round(newWidth / 25) * 25;
+                        newHeight = Math.round(newHeight / 25) * 25;
+                    }
+
+                    this.selectedElement.width = Math.max(50, newWidth);
+                    this.selectedElement.height = Math.max(50, newHeight);
+
+                    this.updateElementDOM(this.selectedElement);
+                    this.updatePropertiesPanel();
+                }
+            },
+
+            onMouseUp(e) {
+                this.dragging = false;
+                this.resizing = false;
+            },
+
+            selectElement(element) {
+                this.deselectAll();
+                this.selectedElement = element;
+                
+                const div = document.getElementById(element.id);
+                if (div) div.classList.add('selected');
+
+                this.showPropertiesPanel(element);
+            },
+
+            deselectAll() {
+                this.selectedElement = null;
+                document.querySelectorAll('.html-element').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                document.getElementById('properties-section').style.display = 'none';
+            },
+
+            showPropertiesPanel(element) {
+                document.getElementById('properties-section').style.display = 'block';
+                
+                // Ocultar todos los paneles específicos
+                document.getElementById('text-props').classList.add('hidden');
+                document.getElementById('image-props').classList.add('hidden');
+                document.getElementById('logo-props').classList.add('hidden');
+                document.getElementById('html-props').classList.add('hidden');
+
+                // Valores comunes
+                document.getElementById('prop-x').value = element.x;
+                document.getElementById('prop-y').value = element.y;
+                document.getElementById('prop-width').value = element.width;
+                document.getElementById('prop-height').value = element.height;
+
+                // Valores específicos
+                if (element.type === 'text-block') {
+                    document.getElementById('text-props').classList.remove('hidden');
+                    document.getElementById('prop-title').value = element.title;
+                    document.getElementById('prop-content').value = element.content;
+                } else if (element.type === 'image') {
+                    document.getElementById('image-props').classList.remove('hidden');
+                    document.getElementById('prop-image-url').value = element.url;
+                    document.getElementById('prop-alt').value = element.alt;
+                } else if (element.type === 'logo') {
+                    document.getElementById('logo-props').classList.remove('hidden');
+                    document.getElementById('prop-icon').value = element.icon;
+                    document.getElementById('prop-text').value = element.text;
+                    document.getElementById('prop-subtitle').value = element.subtitle;
+                } else if (element.type === 'html') {
+                    document.getElementById('html-props').classList.remove('hidden');
+                    document.getElementById('prop-html').value = element.html;
+                }
+            },
+
+            updatePropertiesPanel() {
+                if (!this.selectedElement) return;
+                document.getElementById('prop-x').value = this.selectedElement.x;
+                document.getElementById('prop-y').value = this.selectedElement.y;
+                document.getElementById('prop-width').value = this.selectedElement.width;
+                document.getElementById('prop-height').value = this.selectedElement.height;
+            },
+
+            updateSelectedElement() {
+                if (!this.selectedElement) return;
+
+                // Actualizar valores comunes
+                this.selectedElement.x = parseInt(document.getElementById('prop-x').value);
+                this.selectedElement.y = parseInt(document.getElementById('prop-y').value);
+                this.selectedElement.width = parseInt(document.getElementById('prop-width').value);
+                this.selectedElement.height = parseInt(document.getElementById('prop-height').value);
+
+                // Actualizar valores específicos
+                if (this.selectedElement.type === 'text-block') {
+                    this.selectedElement.title = document.getElementById('prop-title').value;
+                    this.selectedElement.content = document.getElementById('prop-content').value;
+                } else if (this.selectedElement.type === 'image') {
+                    this.selectedElement.url = document.getElementById('prop-image-url').value;
+                    this.selectedElement.alt = document.getElementById('prop-alt').value;
+                } else if (this.selectedElement.type === 'logo') {
+                    this.selectedElement.icon = document.getElementById('prop-icon').value;
+                    this.selectedElement.text = document.getElementById('prop-text').value;
+                    this.selectedElement.subtitle = document.getElementById('prop-subtitle').value;
+                } else if (this.selectedElement.type === 'html') {
+                    this.selectedElement.html = document.getElementById('prop-html').value;
+                }
+
+                this.updateElementDOM(this.selectedElement);
+            },
+
+            updateElementDOM(element) {
+                const div = document.getElementById(element.id);
+                if (!div) return;
+
+                div.style.left = element.x + 'px';
+                div.style.top = element.y + 'px';
+                div.style.width = element.width + 'px';
+                div.style.height = element.height + 'px';
+
+                // Actualizar contenido
+                const label = div.querySelector('.element-label');
+                const handle = div.querySelector('.resize-handle');
+                
+                if (element.type === 'text-block') {
+                    div.innerHTML = '';
+                    if (label) div.appendChild(label);
+                    if (handle) div.appendChild(handle);
+                    div.innerHTML += `<h2>${element.title}</h2><p>${element.content}</p>`;
+                } else if (element.type === 'image') {
+                    div.innerHTML = '';
+                    if (label) div.appendChild(label);
+                    if (handle) div.appendChild(handle);
+                    div.innerHTML += `<img src="${element.url}" alt="${element.alt}" style="width: 100%; height: 100%; object-fit: cover; display: block;">`;
+                } else if (element.type === 'logo') {
+                    div.innerHTML = '';
+                    if (label) div.appendChild(label);
+                    if (handle) div.appendChild(handle);
+                    div.innerHTML += `
+                        <div style="font-size: ${element.height * 0.3}px; font-weight: bold; text-align: center;">
+                            <div style="color: #FFD700;">${element.icon}</div>
+                            <div style="font-family: Impact, sans-serif; color: #000;">${element.text}</div>
+                            <div style="font-size: ${element.height * 0.1}px; color: #666;">${element.subtitle}</div>
+                        </div>
+                    `;
+                } else if (element.type === 'html') {
+                    div.innerHTML = '';
+                    if (label) div.appendChild(label);
+                    if (handle) div.appendChild(handle);
+                    div.innerHTML += element.html;
+                }
+            },
+
+            deleteSelected() {
+                if (!this.selectedElement) return;
+
+                const index = this.elements.findIndex(el => el.id === this.selectedElement.id);
+                if (index > -1) {
+                    const div = document.getElementById(this.selectedElement.id);
+                    if (div) div.remove();
+                    
+                    this.elements.splice(index, 1);
+                    this.deselectAll();
+                    this.updateElementCount();
+                }
+            },
+
+            clearAll() {
+                if (!confirm('¿Estás seguro? Se eliminarán todos los elementos.')) return;
+
+                this.elements = [];
+                document.querySelectorAll('.html-element').forEach(el => el.remove());
+                this.deselectAll();
+                this.updateElementCount();
+            },
+
+            toggleGrid() {
+                const grid = document.getElementById('grid-overlay');
+                grid.style.display = document.getElementById('show-grid').checked ? 'block' : 'none';
+            },
+
+            updateElementCount() {
+                document.getElementById('element-count').textContent = `${this.elements.length} elementos`;
+            },
+
+            exportHTML() {
+                let html = '';
+
+                this.elements.forEach(el => {
+                    if (el.type === 'text-block') {
+                        html += `
+            <!-- Bloque de texto -->
+            <div class="text-block" style="position: absolute; top: ${el.y}px; left: ${el.x}px;">
+                <h2>${el.title}</h2>
+                <p>${el.content}</p>
+            </div>\n`;
+                    } else if (el.type === 'image') {
+                        html += `
+            <!-- Imagen -->
+            <img src="${el.url}" alt="${el.alt}" style="position: absolute; top: ${el.y}px; left: ${el.x}px; width: ${el.width}px; height: ${el.height}px; object-fit: cover;">\n`;
+                    } else if (el.type === 'logo') {
+                        html += `
+            <!-- Logo -->
+            <div class="logo-tukan" style="position: absolute; top: ${el.y}px; left: ${el.x}px;">
+                <div style="font-size: ${el.height * 0.3}px; font-weight: bold; text-align: center;">
+                    <div style="color: #FFD700;">${el.icon}</div>
+                    <div style="font-family: Impact, sans-serif; color: #000;">${el.text}</div>
+                    <div style="font-size: ${el.height * 0.1}px; color: #666;">${el.subtitle}</div>
+                </div>
+            </div>\n`;
+                    } else if (el.type === 'html') {
+                        html += `
+            <!-- HTML personalizado -->
+            <div style="position: absolute; top: ${el.y}px; left: ${el.x}px; width: ${el.width}px; height: ${el.height}px;">
+                ${el.html}
+            </div>\n`;
+                    }
+                });
+
+                document.getElementById('export-code').value = html;
+                document.getElementById('export-modal').classList.add('active');
+                document.getElementById('export-overlay').classList.add('active');
+            }
+        };
+
+        function closeExportModal() {
+            document.getElementById('export-modal').classList.remove('active');
+            document.getElementById('export-overlay').classList.remove('active');
+        }
+
+        function copyCode() {
+            const textarea = document.getElementById('export-code');
+            textarea.select();
+            document.execCommand('copy');
+            alert('✅ Código copiado al portapapeles');
+        }
+
+        // Inicializar editor
+        editor.init();
+    </script>
+</body>
+</html>

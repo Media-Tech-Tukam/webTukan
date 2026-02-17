@@ -22,8 +22,8 @@ export const levelConfig = {
                 color: "#ffffff"
         },
         {
-                x: 450,
-                y: 2700,
+                x: 570,
+                y: 2660,
                 width: 200,
                 height: 25,
                 color: "#ffffff"
@@ -43,8 +43,8 @@ export const levelConfig = {
                 color: "#ffffff"
         },
         {
-                x: 300,
-                y: 2380,
+                x: 560,
+                y: 2420,
                 width: 180,
                 height: 25,
                 color: "#ffffff"
@@ -146,13 +146,20 @@ export const levelConfig = {
                 width: 200,
                 height: 25,
                 color: "#0f3460"
+        },
+        {
+                x: 289,
+                y: 2265.999999999999,
+                width: 200,
+                height: 25,
+                color: "#0f3460"
         }
 ],
     
     vines: [
         {
-                x: 400,
-                y: 2550,
+                x: 360,
+                y: 2570,
                 width: 20,
                 height: 200,
                 color: "#7FFF00"
@@ -175,20 +182,22 @@ export const levelConfig = {
     
     movingPlatforms: [
         {
-                x: 386,
-                y: 2600,
+                x: 560,
+                y: 2520,
                 width: 120,
                 height: 20,
                 color: "#ff6b6b",
                 moveType: "horizontal",
                 speed: 2,
-                startX: 250,
-                endX: 500,
-                direction: 1
+                startX: 470,
+                endX: 720,
+                direction: -1,
+                startY: null,
+                endY: null
         },
         {
                 x: 800,
-                y: 2046.5,
+                y: 1820,
                 width: 100,
                 height: 20,
                 color: "#ffaa00",

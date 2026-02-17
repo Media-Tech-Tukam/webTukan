@@ -56,6 +56,22 @@ class TileEditor {
                 this.camera.targetY = WORLD_HEIGHT - GAME_HEIGHT;
             }
         });
+        
+        // Sincronizar HTML layer cuando se hace scroll en el workspace
+        const workspace = document.querySelector('.workspace');
+        if (!workspace) {
+            // Si no existe workspace, estamos en el juego normal, no en un editor separado
+            // Usar scroll del window
+            window.addEventListener('scroll', () => {
+                if (!this.active) return;
+                this.syncHTMLLayerToScroll();
+            });
+        }
+    }
+    
+    syncHTMLLayerToScroll() {
+        // Esta función se llama cuando hay scroll del navegador (no wheel del canvas)
+        // No se usa en el diseño actual pero la dejamos por si acaso
     }
     
     setupUI() {
@@ -590,6 +606,12 @@ class TileEditor {
         // Suavizar movimiento de cámara
         this.camera.y += (this.camera.targetY - this.camera.y) * 0.1;
         
+        // Sincronizar HTML layer con la cámara del editor
+        const htmlLayer = document.getElementById('html-layer');
+        if (htmlLayer) {
+            htmlLayer.style.transform = `translateY(-${this.camera.y}px)`;
+        }
+        
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
         
         // Guardar estado y aplicar transformación de cámara
@@ -957,16 +979,36 @@ export const levelConfig = {
         const ui = document.getElementById('editor-ui');
         const instructions = document.querySelector('.instructions');
         const hud = document.querySelector('.hud');
+        const htmlLayer = document.getElementById('html-layer');
         
         if (this.active) {
             ui.style.display = 'block';
             if (instructions) instructions.style.display = 'none';
             if (hud) hud.style.display = 'none';
+            
+            // NUEVO: Asegurar que el HTML layer sea visible en modo editor
+            if (htmlLayer) {
+                htmlLayer.style.visibility = 'visible';
+                htmlLayer.style.opacity = '1';
+            }
+            
+            // CRÍTICO: Detener el loop del juego para evitar conflictos
+            window.gameLoopPaused = true;
+            
             this.draw();
         } else {
             ui.style.display = 'none';
             if (instructions) instructions.style.display = 'block';
             if (hud) hud.style.display = 'flex';
+            
+            // El HTML layer se mantiene visible (el juego lo controla)
+            if (htmlLayer) {
+                htmlLayer.style.visibility = 'visible';
+                htmlLayer.style.opacity = '1';
+            }
+            
+            // CRÍTICO: Reactivar el loop del juego
+            window.gameLoopPaused = false;
         }
     }
 }

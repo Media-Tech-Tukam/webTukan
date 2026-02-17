@@ -44,6 +44,9 @@ const camera = {
     },
     
     syncHTMLLayer() {
+        // NUEVO: Solo sincronizar si el editor NO está activo
+        if (window.gameLoopPaused) return;
+        
         const htmlLayer = document.getElementById('html-layer');
         if (htmlLayer) {
             // Mover la capa HTML junto con la cámara
@@ -827,13 +830,17 @@ function gameLoop(timestamp = 0) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
     
-    updateMovingPlatforms();
-    updatePlayer();
+    // NUEVO: Solo actualizar si el editor NO está activo
+    if (!window.gameLoopPaused) {
+        updateMovingPlatforms();
+        updatePlayer();
+        
+        // Actualizar animación del sprite
+        spriteAnimator.update(deltaTime);
+        
+        draw();
+    }
     
-    // Actualizar animación del sprite
-    spriteAnimator.update(deltaTime);
-    
-    draw();
     requestAnimationFrame(gameLoop);
 }
 
