@@ -9,101 +9,101 @@ export const levelConfig = {
     platforms: [
         {
                 x: 0,
-                y: 2950,
+                y: 3000,
                 width: 1100,
-                height: 50,
-                color: "#ffffff"
+                height: 1,
+                color: "#d6d6d6"
         },
         {
                 x: 150,
-                y: 2820,
+                y: 2880,
                 width: 180,
                 height: 25,
-                color: "#ffffff"
+                color: "#d6d6d6"
         },
         {
                 x: 570,
                 y: 2660,
                 width: 200,
                 height: 25,
-                color: "#ffffff"
+                color: "#d9d9d9"
         },
         {
                 x: 100,
                 y: 2500,
                 width: 220,
                 height: 25,
-                color: "#ffffff"
+                color: "#c9c9c9"
         },
         {
                 x: 600,
                 y: 2350,
                 width: 200,
                 height: 25,
-                color: "#ffffff"
+                color: "#d6d6d6"
         },
         {
                 x: 560,
                 y: 2420,
                 width: 180,
                 height: 25,
-                color: "#ffffff"
+                color: "#d1d1d1"
         },
         {
                 x: 700,
                 y: 2000,
                 width: 200,
                 height: 25,
-                color: "#ffffff"
+                color: "#d6d6d6"
         },
         {
-                x: 300,
-                y: 1800,
+                x: 280,
+                y: 1820,
                 width: 220,
                 height: 25,
-                color: "#ffffff"
+                color: "#f0f0f0"
         },
         {
                 x: 650,
                 y: 1600,
                 width: 180,
                 height: 25,
-                color: "#ffffff"
+                color: "#e0e0e0"
         },
         {
                 x: 150,
                 y: 1350,
                 width: 200,
                 height: 25,
-                color: "#ffffff"
+                color: "#d9d9d9"
         },
         {
                 x: 550,
                 y: 1150,
                 width: 220,
                 height: 25,
-                color: "#ffffff"
+                color: "#d6d6d6"
         },
         {
                 x: 250,
                 y: 950,
                 width: 180,
                 height: 25,
-                color: "#ffffff"
+                color: "#d6d6d6"
         },
         {
                 x: 600,
                 y: 700,
                 width: 200,
                 height: 25,
-                color: "#ffffff"
+                color: "#dedede"
         },
         {
-                x: 200,
+                x: 180,
                 y: 500,
                 width: 220,
                 height: 25,
-                color: "#ffffff"
+                color: "#d4d4d4"
         },
         {
                 x: 500,
@@ -153,6 +153,20 @@ export const levelConfig = {
                 width: 200,
                 height: 25,
                 color: "#0f3460"
+        },
+        {
+                x: 410,
+                y: 382.0000000000001,
+                width: 200,
+                height: 25,
+                color: "#0f3460"
+        },
+        {
+                x: 450,
+                y: 602.0000000000001,
+                width: 200,
+                height: 25,
+                color: "#0f3460"
         }
 ],
     
@@ -160,9 +174,9 @@ export const levelConfig = {
         {
                 x: 360,
                 y: 2570,
-                width: 20,
+                width: 5,
                 height: 200,
-                color: "#7FFF00"
+                color: "#7fff00"
         },
         {
                 x: 750,
@@ -182,11 +196,11 @@ export const levelConfig = {
     
     movingPlatforms: [
         {
-                x: 560,
+                x: 658,
                 y: 2520,
                 width: 120,
                 height: 20,
-                color: "#ff6b6b",
+                color: "#bfbfbf",
                 moveType: "horizontal",
                 speed: 2,
                 startX: 470,
@@ -197,7 +211,7 @@ export const levelConfig = {
         },
         {
                 x: 800,
-                y: 1820,
+                y: 1956.5,
                 width: 100,
                 height: 20,
                 color: "#ffaa00",

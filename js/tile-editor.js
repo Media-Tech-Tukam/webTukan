@@ -109,7 +109,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="edit-height" step="5">
                     <label>Color:</label>
-                    <input type="color" id="edit-color">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="edit-color" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="edit-color-hex" maxlength="7" placeholder="#000000" style="flex:1; font-family:monospace;">
+                    </div>
                     <button id="apply-props" class="editor-btn-primary">✓ Aplicar Cambios</button>
                 </div>
                 
@@ -120,7 +123,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="platform-height" value="25" step="5">
                     <label>Color:</label>
-                    <input type="color" id="platform-color" value="#0f3460">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="platform-color" value="#0f3460" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="platform-color-hex" value="#0f3460" maxlength="7" placeholder="#0f3460" style="flex:1; font-family:monospace;">
+                    </div>
                 </div>
                 
                 <div class="editor-section" id="moving-platform-props" style="display: none;">
@@ -130,7 +136,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="moving-platform-height" value="20" step="5">
                     <label>Color:</label>
-                    <input type="color" id="moving-platform-color" value="#ff6b6b">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="moving-platform-color" value="#ff6b6b" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="moving-platform-color-hex" value="#ff6b6b" maxlength="7" placeholder="#ff6b6b" style="flex:1; font-family:monospace;">
+                    </div>
                     <label>Tipo de movimiento:</label>
                     <select id="moving-platform-type">
                         <option value="horizontal">Horizontal ←→</option>
@@ -152,7 +161,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="vine-height" value="200" step="20">
                     <label>Color:</label>
-                    <input type="color" id="vine-color" value="#00ff88">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="vine-color" value="#00ff88" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="vine-color-hex" value="#00ff88" maxlength="7" placeholder="#00ff88" style="flex:1; font-family:monospace;">
+                    </div>
                 </div>
                 
                 <div class="editor-section" id="decoration-props" style="display: none;">
@@ -162,7 +174,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="decoration-height" value="100" step="20">
                     <label>Color:</label>
-                    <input type="color" id="decoration-color" value="#ff6b6b">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="decoration-color" value="#ff6b6b" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="decoration-color-hex" value="#ff6b6b" maxlength="7" placeholder="#ff6b6b" style="flex:1; font-family:monospace;">
+                    </div>
                     <label>Opacidad:</label>
                     <input type="range" id="decoration-opacity" min="0.1" max="1" step="0.1" value="0.5">
                     <span id="opacity-value" style="color: #aaa;">0.5</span>
@@ -198,7 +213,10 @@ class TileEditor {
                     <label>Alto:</label>
                     <input type="number" id="portal-height" value="80" step="10">
                     <label>Color:</label>
-                    <input type="color" id="portal-color" value="#FFD700">
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="portal-color" value="#FFD700" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="portal-color-hex" value="#FFD700" maxlength="7" placeholder="#FFD700" style="flex:1; font-family:monospace;">
+                    </div>
                     <label>Icono:</label>
                     <select id="portal-icon">
                         <option value="🚪">🚪 Puerta</option>
@@ -273,6 +291,52 @@ class TileEditor {
         document.getElementById('delete-item').addEventListener('click', () => this.deleteItem());
         document.getElementById('export-level').addEventListener('click', () => this.exportLevel());
         document.getElementById('apply-props').addEventListener('click', () => this.applyProperties());
+        
+        // Sincronizar pares color picker + hex text
+        this.setupColorPair('platform-color', 'platform-color-hex');
+        this.setupColorPair('moving-platform-color', 'moving-platform-color-hex');
+        this.setupColorPair('vine-color', 'vine-color-hex');
+        this.setupColorPair('decoration-color', 'decoration-color-hex');
+        this.setupColorPair('portal-color', 'portal-color-hex');
+        this.setupColorPair('edit-color', 'edit-color-hex');
+    }
+    
+    // Sincroniza un input[type=color] con su input[type=text] hex compañero
+    setupColorPair(pickerId, hexId) {
+        const picker = document.getElementById(pickerId);
+        const hex = document.getElementById(hexId);
+        if (!picker || !hex) return;
+        
+        // Picker → texto
+        picker.addEventListener('input', () => {
+            hex.value = picker.value;
+        });
+        
+        // Texto → picker (solo cuando el hex es válido)
+        hex.addEventListener('input', () => {
+            const val = hex.value.trim();
+            if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                picker.value = val;
+                hex.style.color = '#fff';
+            } else {
+                hex.style.color = '#ff6b6b'; // rojo si inválido
+            }
+        });
+        
+        // Al pegar, aplicar inmediatamente
+        hex.addEventListener('paste', (e) => {
+            setTimeout(() => {
+                let val = hex.value.trim();
+                if (!val.startsWith('#')) val = '#' + val;
+                hex.value = val;
+                if (/^#[0-9a-fA-F]{6}$/.test(val)) {
+                    picker.value = val;
+                    hex.style.color = '#fff';
+                } else {
+                    hex.style.color = '#ff6b6b';
+                }
+            }, 0);
+        });
     }
     
     setupMouseEvents() {
@@ -573,7 +637,8 @@ class TileEditor {
         
         if (item.color) {
             document.getElementById('edit-color').value = item.color;
-            document.getElementById('edit-color').parentElement.style.display = 'block';
+            document.getElementById('edit-color-hex').value = item.color;
+            document.getElementById('edit-color').parentElement.style.display = 'flex';
         } else {
             document.getElementById('edit-color').parentElement.style.display = 'none';
         }
@@ -593,7 +658,11 @@ class TileEditor {
         item.height = parseFloat(document.getElementById('edit-height').value);
         
         if (item.color) {
-            item.color = document.getElementById('edit-color').value;
+            // Leer del hex si es válido, sino del picker
+            const hexVal = document.getElementById('edit-color-hex').value.trim();
+            item.color = /^#[0-9a-fA-F]{6}$/.test(hexVal) 
+                ? hexVal 
+                : document.getElementById('edit-color').value;
         }
         
         this.draw();

@@ -1,9 +1,9 @@
 // Contenido de los modales
 export const modalContent = {
     inicio: {
-        title: '🏠 Bienvenido a Tukan',
+        title: 'Bienvenido a Tukan',
         html: `
-            <p style="font-size: 18px; line-height: 1.6;">Somos <strong>diseñadores de experiencias gamificadas</strong> para empresas que quieren destacar en eventos y ferias.</p>
+            <p>Somos <strong>diseñadores de experiencias gamificadas</strong> para empresas que quieren destacar en eventos y ferias.</p>
             
             <p style="margin-top: 15px;">Transformamos mensajes corporativos en <strong>juegos interactivos</strong> que enganchan, entretienen y comunican de forma memorable.</p>
             
@@ -18,7 +18,7 @@ export const modalContent = {
     },
     
     servicios: {
-        title: '⚙️ Nuestros Servicios',
+        title: 'Nuestros Servicios',
         html: `
             <h3>🎮 Diseño de Juegos para Eventos</h3>
             <p>Creamos juegos personalizados que transmiten el mensaje de tu empresa de forma divertida y efectiva.</p>
@@ -38,7 +38,7 @@ export const modalContent = {
     },
     
     portafolio: {
-        title: '🎯 Portafolio de Juegos',
+        title: 'Portafolio de Juegos',
         html: `
             <p>Explora algunos de nuestros proyectos más exitosos:</p>
             
@@ -72,7 +72,7 @@ export const modalContent = {
     },
     
     nosotros: {
-        title: '👥 Sobre Tukan',
+        title: 'Sobre Tukan',
         html: `
             <p style="font-size: 18px; line-height: 1.6;">Somos un equipo multidisciplinario de <strong>diseñadores, artistas 3D y desarrolladores</strong> apasionados por crear experiencias que combinan arte, tecnología y diversión.</p>
             
@@ -99,7 +99,7 @@ export const modalContent = {
     },
     
     contacto: {
-        title: '📧 Contáctanos',
+        title: 'Contáctanos',
         html: `
             <p style="font-size: 16px; margin-bottom: 20px;">¿Tienes un evento próximo? ¿Una idea que quieres gamificar? ¡Hablemos!</p>
             

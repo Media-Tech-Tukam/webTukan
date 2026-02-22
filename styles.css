@@ -1,14 +1,22 @@
+@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
+.rojo {
+    color: white;
+    background: #ABE900;
+}
 body {
     overflow: hidden;
-    font-family: 'Arial', sans-serif;
-    background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%);
-    display: flex;
+    font-family: "Roboto", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    font-variation-settings:
+        "wdth" 100;
+   /* display: flex;*/
     justify-content: center;
     align-items: center;
     min-height: 100vh;
@@ -19,9 +27,6 @@ body {
     width: 1100px;
     height: 600px; /* Altura inicial, se actualiza con JS */
     margin: 0 auto;
-    box-shadow: 0 0 50px rgba(0, 217, 255, 0.3);
-    border: 2px solid #00d9ff;
-    border-radius: 10px;
     overflow: hidden;
     transition: height 0.3s ease;
 }
@@ -34,34 +39,25 @@ body {
     width: 1100px;
     height: 3000px;
     z-index: 1;
-    background: linear-gradient(180deg, #f5f5f5 0%, #e0e0e0 100%);
-    /* Transición suave para efecto parallax */
     transition: transform 0.1s ease-out;
     will-change: transform;
 }
 
 /* Bloques de texto estilo maqueta */
 .text-block {
-    background: white;
-    border: 3px solid #000;
-    padding: 25px;
-    max-width: 350px;
-    box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
+   
 }
 
 .text-block h2 {
-    font-family: 'Impact', 'Arial Black', sans-serif;
+    font-family: "Bebas Neue", sans-serif;
+    font-weight: 400;
+    font-style: normal;
     font-size: 28px;
-    text-transform: uppercase;
-    margin: 0 0 15px 0;
-    color: #000;
 }
 
 .text-block p {
-    font-family: 'Arial', sans-serif;
     font-size: 13px;
     line-height: 1.6;
-    color: #333;
     margin: 0;
 }
 
@@ -77,21 +73,17 @@ canvas {
 
 /* HUD - Interfaz superior */
 .hud {
-    position: fixed;
+   /* position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) translateY(calc(-50vh + 30px));
-    width: 1100px;
-    background: rgba(0, 0, 0, 0.7);
-    padding: 15px 30px;
+    transform: translate(-50%, -50%) translateY(calc(-50vh + 30px));*/
+  
+ 
     display: flex;
     justify-content: space-between;
     align-items: center;
     z-index: 100;
-    backdrop-filter: blur(10px);
-    border-radius: 10px 10px 0 0;
-    border: 2px solid #00d9ff;
-    border-bottom: none;
+    border-bottom: 1px solid black;
 }
 
 .progress-display {
@@ -110,7 +102,6 @@ canvas {
 .logo {
     font-size: 28px;
     font-weight: bold;
-    color: #00d9ff;
     text-shadow: 0 0 10px #00d9ff;
 }
 
@@ -124,7 +115,6 @@ canvas {
     display: flex;
     align-items: center;
     gap: 8px;
-    color: #fff;
     font-size: 14px;
 }
 
@@ -139,7 +129,6 @@ canvas {
 
 .checkpoint.visited {
     background: #00d9ff;
-    border-color: #00d9ff;
     box-shadow: 0 0 10px #00d9ff;
 }
 
@@ -150,16 +139,14 @@ canvas {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+    background: #fff;
     padding: 0;
-    border-radius: 20px;
     box-shadow: 0 20px 60px rgba(0,0,0,0.5);
     z-index: 1000;
     max-width: 700px;
     width: 90%;
     max-height: 80vh;
     overflow: hidden;
-    border: 2px solid #00d9ff;
 }
 
 .modal.active {
@@ -179,9 +166,7 @@ canvas {
 }
 
 .modal-header {
-    background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
     padding: 25px 30px;
-    color: white;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -190,13 +175,12 @@ canvas {
 .modal-header h2 {
     margin: 0;
     font-size: 28px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+     font-family: "Bebas Neue", sans-serif;
 }
 
 .btn-close-header {
     background: rgba(255, 255, 255, 0.2);
     border: none;
-    color: white;
     width: 35px;
     height: 35px;
     border-radius: 50%;
@@ -216,7 +200,6 @@ canvas {
 
 .modal-content {
     padding: 30px;
-    color: #e0e0e0;
     max-height: 50vh;
     overflow-y: auto;
 }
@@ -230,12 +213,11 @@ canvas {
 }
 
 .modal-content::-webkit-scrollbar-thumb {
-    background: #00d9ff;
+    background: #666;
     border-radius: 4px;
 }
 
 .modal-content h3 {
-    color: #00d9ff;
     margin-top: 20px;
     margin-bottom: 10px;
 }
@@ -255,7 +237,6 @@ canvas {
     content: "▶";
     position: absolute;
     left: 0;
-    color: #00d9ff;
 }
 
 .game-grid {
@@ -275,13 +256,11 @@ canvas {
 }
 
 .game-card:hover {
-    border-color: #00d9ff;
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(0, 217, 255, 0.3);
 }
 
 .game-card h4 {
-    color: #00d9ff;
     margin-bottom: 8px;
 }
 
@@ -302,7 +281,6 @@ canvas {
     background: #333;
     border: 2px solid #444;
     border-radius: 8px;
-    color: #fff;
     font-size: 14px;
 }
 
@@ -315,7 +293,6 @@ canvas {
 .btn-primary {
     padding: 12px 30px;
     background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
-    color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -333,7 +310,6 @@ canvas {
     margin-top: 15px;
     padding: 10px 25px;
     background: #444;
-    color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
@@ -352,7 +328,6 @@ canvas {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0,0,0,0.8);
     z-index: 999;
     backdrop-filter: blur(5px);
 }
@@ -365,7 +340,6 @@ canvas {
 .tooltip {
     position: fixed;
     background: rgba(0, 0, 0, 0.9);
-    color: #00d9ff;
     padding: 8px 15px;
     border-radius: 5px;
     font-size: 14px;
@@ -376,20 +350,14 @@ canvas {
 }
 
 .instructions {
-    position: fixed;
+  /*  position: fixed;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) translateY(calc(50vh - 30px));
-    background: rgba(0, 0, 0, 0.7);
-    color: #fff;
+    transform: translate(-50%, -50%) translateY(calc(50vh - 30px));*/
+
     padding: 15px 30px;
-    border-radius: 0 0 10px 10px;
-    font-size: 16px;
     z-index: 100;
-    backdrop-filter: blur(10px);
-    border: 2px solid #00d9ff;
-    border-top: none;
-    width: 1100px;
+    border-top: 1px solid black;
     text-align: center;
 }
 
@@ -422,7 +390,6 @@ canvas {
 
 .editor-panel h3 {
     margin: 0 0 20px 0;
-    color: #00d9ff;
     font-size: 20px;
     text-shadow: 0 0 10px #00d9ff;
 }
@@ -441,7 +408,6 @@ canvas {
 
 .editor-section label {
     display: block;
-    color: #aaa;
     font-size: 13px;
     margin-bottom: 5px;
 }
@@ -454,7 +420,6 @@ canvas {
     background: #2d2d2d;
     border: 1px solid #444;
     border-radius: 5px;
-    color: #fff;
     font-size: 14px;
     margin-bottom: 10px;
 }
@@ -468,7 +433,6 @@ canvas {
     background: #444;
     border: none;
     border-radius: 5px;
-    color: white;
     cursor: pointer;
     font-size: 14px;
     margin-right: 10px;
@@ -485,7 +449,6 @@ canvas {
     background: linear-gradient(135deg, #00d9ff 0%, #0099ff 100%);
     border: none;
     border-radius: 5px;
-    color: white;
     cursor: pointer;
     font-size: 14px;
     font-weight: bold;
@@ -499,7 +462,6 @@ canvas {
 }
 
 .editor-section small {
-    color: #888;
     line-height: 1.6;
 }
 
@@ -516,7 +478,6 @@ canvas {
 }
 
 #selected-props label {
-    color: #FFD700;
 }
 
 /* Animaciones para logros */

@@ -15,8 +15,8 @@ const ctx = canvas.getContext('2d');
 
 // Dimensiones fijas del juego
 const GAME_WIDTH = 1100;
-let GAME_HEIGHT = 600; // Ahora es variable según la pantalla
-const WORLD_HEIGHT = 3000; // Altura total del mundo del juego
+let GAME_HEIGHT = 600;
+const WORLD_HEIGHT = 3000;
 
 // Sistema de cámara
 const camera = {
@@ -26,30 +26,20 @@ const camera = {
     height: GAME_HEIGHT,
     
     follow(target) {
-        // La cámara sigue al jugador verticalmente
-        // Mantiene al jugador en el tercio inferior de la pantalla
         this.y = target.y - GAME_HEIGHT * 0.66;
         
-        // Límites de la cámara
         if (this.y < 0) this.y = 0;
         if (this.y > WORLD_HEIGHT - GAME_HEIGHT) {
             this.y = WORLD_HEIGHT - GAME_HEIGHT;
         }
         
-        // La cámara no se mueve horizontalmente (juego de ancho fijo)
         this.x = 0;
-        
-        // Sincronizar capa HTML
         this.syncHTMLLayer();
     },
     
     syncHTMLLayer() {
-        // NUEVO: Solo sincronizar si el editor NO está activo
-        if (window.gameLoopPaused) return;
-        
         const htmlLayer = document.getElementById('html-layer');
         if (htmlLayer) {
-            // Mover la capa HTML junto con la cámara
             htmlLayer.style.transform = `translateY(-${this.y}px)`;
         }
     }
@@ -58,23 +48,20 @@ const camera = {
 function resizeCanvas() {
     canvas.width = GAME_WIDTH;
     
-    // Calcular altura disponible (restar espacio del HUD y instrucciones)
-    const hudHeight = 60; // Aproximado
-    const instructionsHeight = 60; // Aproximado
-    const margin = 40; // Margen superior e inferior
+    const hudHeight = 60;
+    const instructionsHeight = 60;
+    const margin = 40;
     
     GAME_HEIGHT = Math.min(
         window.innerHeight - hudHeight - instructionsHeight - margin,
-        800 // Altura máxima para que no sea demasiado grande
+        800
     );
     
-    // Altura mínima para que sea jugable
     GAME_HEIGHT = Math.max(GAME_HEIGHT, 400);
     
     canvas.height = GAME_HEIGHT;
     camera.height = GAME_HEIGHT;
     
-    // Actualizar el contenedor
     const container = document.getElementById('game-container');
     if (container) {
         container.style.height = GAME_HEIGHT + 'px';
@@ -100,12 +87,10 @@ const game = {
         if (progressText) {
             progressText.textContent = `${visited}/${total}`;
             
-            // Animación cuando completas todo
             if (visited === total && total > 0) {
                 progressText.style.color = '#FFD700';
                 progressText.style.textShadow = '0 0 20px #FFD700';
                 
-                // Efecto de celebración
                 setTimeout(() => {
                     alert('🎉 ¡Felicidades! Has explorado todo el contenido de Tukan');
                 }, 300);
@@ -116,9 +101,9 @@ const game = {
 
 const player = {
     x: 100,
-    y: WORLD_HEIGHT - 125, // Ajustado para el tamaño de 75x75
-    width: 75,
-    height: 75,
+    y: WORLD_HEIGHT - 125,
+    width: 75,      // ancho visual del sprite
+    height: 75,     // alto visual del sprite
     speedX: 0,
     speedY: 0,
     jumping: false,
@@ -126,17 +111,28 @@ const player = {
     jumpPower: 13,
     climbing: false,
     climbSpeed: 4,
-    facingRight: true // Para el flip horizontal
+    facingRight: true,
+
+    // Hitbox más pequeño: 35x50, centrado horizontalmente y alineado al fondo del sprite
+    // offsetX = (75 - 35) / 2 = 20
+    // offsetY = 75 - 50 = 25
+    get hitbox() {
+        return {
+            x: this.x + 20,
+            y: this.y + 25,
+            width: 35,
+            height: 50
+        };
+    }
 };
 
 // Inicializar sistema de sprites
-// Ruta al sprite sheet (cambiar cuando tengas tu sprite)
 const spriteAnimator = new SpriteAnimator('assets/player-sprite.png', 75, 75);
 
 // Variables para tracking de tiempo
 let lastTime = 0;
 
-// Cargar plataformas y secciones desde level-data.js
+// Cargar datos del nivel
 const platforms = levelConfig.platforms;
 const vines = levelConfig.vines || [];
 const movingPlatforms = levelConfig.movingPlatforms || [];
@@ -152,42 +148,31 @@ const sections = levelConfig.sections.map(section => ({
     `
 }));
 
-// Inicializar el contador de secciones totales
 game.totalSections = sections.length;
 
-// Función de inicialización
 function initGame() {
-    // Cargar secciones ya visitadas desde localStorage
     const visitedSections = progressManager.getVisitedSections();
     visitedSections.forEach(sectionId => {
         game.visitedSections.add(sectionId);
         
-        // Marcar checkpoint visual
         const checkpoint = document.getElementById('check-' + sectionId);
         if (checkpoint) {
             checkpoint.classList.add('visited');
         }
     });
     
-    // Actualizar contador
     game.updateProgress();
-    
-    // Activar portales si corresponde
     updatePortalsState();
 }
 
-// Actualizar estado de portales (siempre activos)
 function updatePortalsState() {
     exitPortals.forEach(portal => {
-        // Los portales siempre están activos
         portal.active = true;
     });
 }
 
-// Inicializar juego
 initGame();
 
-// Control de teclado
 window.addEventListener('keydown', (e) => {
     game.keys[e.key] = true;
 });
@@ -196,20 +181,15 @@ window.addEventListener('keyup', (e) => {
     game.keys[e.key] = false;
 });
 
-// Actualizar plataformas móviles
 function updateMovingPlatforms() {
     movingPlatforms.forEach(platform => {
         if (platform.moveType === 'horizontal') {
             platform.x += platform.speed * platform.direction;
-            
-            // Rebotar en los límites
             if (platform.x >= platform.endX || platform.x <= platform.startX) {
                 platform.direction *= -1;
             }
         } else if (platform.moveType === 'vertical') {
             platform.y += platform.speed * platform.direction;
-            
-            // Rebotar en los límites
             if (platform.y >= platform.endY || platform.y <= platform.startY) {
                 platform.direction *= -1;
             }
@@ -217,32 +197,30 @@ function updateMovingPlatforms() {
     });
 }
 
-// Actualizar jugador
 function updatePlayer() {
-    // Verificar si está tocando una liana
+    const hb = player.hitbox;
+
+    // --- LIANAS ---
     let onVine = false;
     vines.forEach(vine => {
-        if (checkCollision(player, vine)) {
+        if (checkCollision(hb, vine)) {
             onVine = true;
         }
     });
     
     if (onVine) {
-        // Modo trepar
         player.climbing = true;
-        player.speedY = 0; // Detener caída
+        player.speedY = 0;
         player.jumping = false;
         
-        // Controles de trepado
         if (game.keys['ArrowUp']) {
             player.speedY = -player.climbSpeed;
         } else if (game.keys['ArrowDown']) {
             player.speedY = player.climbSpeed;
         } else {
-            player.speedY = 0; // Quedarse quieto en la liana
+            player.speedY = 0;
         }
         
-        // Movimiento lateral más lento en liana
         if (game.keys['ArrowLeft']) {
             player.speedX = -player.moveSpeed * 0.5;
             player.facingRight = false;
@@ -253,14 +231,12 @@ function updatePlayer() {
             player.speedX = 0;
         }
         
-        // Saltar desde la liana
-        if (game.keys[' ']) { // Espacio para saltar
+        if (game.keys[' ']) {
             player.speedY = -player.jumpPower;
             player.climbing = false;
             player.jumping = true;
         }
     } else {
-        // Modo normal (no en liana)
         player.climbing = false;
         
         if (game.keys['ArrowLeft']) {
@@ -278,109 +254,109 @@ function updatePlayer() {
             player.jumping = true;
         }
 
-        // Aplicar gravedad solo si no está trepando
         player.speedY += game.gravity;
     }
     
     player.x += player.speedX;
     player.y += player.speedY;
 
-    if (player.x < 0) player.x = 0;
-    if (player.x + player.width > GAME_WIDTH) player.x = GAME_WIDTH - player.width;
+    // Límites laterales usando el hitbox
+    if (player.hitbox.x < 0) player.x = -20;
+    if (player.hitbox.x + player.hitbox.width > GAME_WIDTH) player.x = GAME_WIDTH - 55;
 
-    // Colisión con plataformas estáticas
+    // --- COLISIÓN CON PLATAFORMAS ESTÁTICAS ---
     platforms.forEach(platform => {
-        if (checkCollision(player, platform)) {
-            if (player.speedY > 0 && player.y + player.height - player.speedY <= platform.y) {
-                player.y = platform.y - player.height;
+        const hb = player.hitbox;
+        if (checkCollision(hb, platform)) {
+            // Desde arriba (aterrizar)
+            if (player.speedY > 0 && hb.y + hb.height - player.speedY <= platform.y) {
+                // pie del hitbox = platform.y  →  player.y + 25 + 50 = platform.y
+                player.y = platform.y - 75;
                 player.speedY = 0;
                 player.jumping = false;
             }
         }
     });
     
-    // Colisión con plataformas móviles
-    let onMovingPlatform = false;
+    // --- COLISIÓN CON PLATAFORMAS MÓVILES ---
     movingPlatforms.forEach(platform => {
-        if (checkCollision(player, platform)) {
-            // Colisión desde arriba (pararse sobre la plataforma)
-            if (player.speedY > 0 && player.y + player.height - player.speedY <= platform.y + 5) {
-                player.y = platform.y - player.height;
+        const hb = player.hitbox;
+        if (checkCollision(hb, platform)) {
+            if (player.speedY > 0 && hb.y + hb.height - player.speedY <= platform.y + 5) {
+                player.y = platform.y - 75;
                 player.speedY = 0;
                 player.jumping = false;
-                onMovingPlatform = true;
-                
-                // Mover al jugador con la plataforma
+
                 if (platform.moveType === 'horizontal') {
                     player.x += platform.speed * platform.direction;
                 } else if (platform.moveType === 'vertical') {
                     player.y += platform.speed * platform.direction;
                 }
-            }
-            // Colisión lateral (empujar al jugador)
-            else if (platform.moveType === 'horizontal') {
-                if (player.x < platform.x) {
-                    player.x = platform.x - player.width;
+            } else if (platform.moveType === 'horizontal') {
+                // Empuje lateral — corregir respecto al hitbox
+                if (hb.x < platform.x) {
+                    player.x = platform.x - hb.width - 20;
                 } else {
-                    player.x = platform.x + platform.width;
+                    player.x = platform.x + platform.width - 20;
                 }
-            }
-            // Colisión vertical desde abajo
-            else if (platform.moveType === 'vertical' && player.speedY < 0) {
-                player.y = platform.y + platform.height;
+            } else if (platform.moveType === 'vertical' && player.speedY < 0) {
+                // Golpe desde abajo
+                player.y = platform.y + platform.height - 25;
                 player.speedY = 0;
             }
         }
     });
 
-    // Detectar proximidad y colisión con secciones
+    // --- SECCIONES ---
     sections.forEach(section => {
+        const hb = player.hitbox;
         const distance = Math.sqrt(
-            Math.pow(player.x + player.width/2 - (section.x + section.width/2), 2) +
-            Math.pow(player.y + player.height/2 - (section.y + section.height/2), 2)
+            Math.pow(hb.x + hb.width / 2 - (section.x + section.width / 2), 2) +
+            Math.pow(hb.y + hb.height / 2 - (section.y + section.height / 2), 2)
         );
 
         if (distance < 80 && !game.modalOpen) {
             showTooltip(section);
         }
 
-        if (checkCollision(player, section) && !game.modalOpen && game.lastInteraction !== section.id) {
+        if (checkCollision(hb, section) && !game.modalOpen && game.lastInteraction !== section.id) {
             showModal(section);
             markAsVisited(section.id);
             game.lastInteraction = section.id;
-        } else if (!checkCollision(player, section) && game.lastInteraction === section.id) {
+        } else if (!checkCollision(hb, section) && game.lastInteraction === section.id) {
             game.lastInteraction = null;
         }
     });
     
-    // Detectar colisión con portales de salida
+    // --- PORTALES ---
     exitPortals.forEach(portal => {
+        const hb = player.hitbox;
         const distance = Math.sqrt(
-            Math.pow(player.x + player.width/2 - (portal.x + portal.width/2), 2) +
-            Math.pow(player.y + player.height/2 - (portal.y + portal.height/2), 2)
+            Math.pow(hb.x + hb.width / 2 - (portal.x + portal.width / 2), 2) +
+            Math.pow(hb.y + hb.height / 2 - (portal.y + portal.height / 2), 2)
         );
 
         if (distance < 100 && !game.modalOpen) {
             showPortalTooltip(portal);
         }
 
-        if (checkCollision(player, portal) && !game.modalOpen && game.lastInteraction !== 'portal') {
+        if (checkCollision(hb, portal) && !game.modalOpen && game.lastInteraction !== 'portal') {
             handlePortalCollision(portal);
             game.lastInteraction = 'portal';
-        } else if (!checkCollision(player, portal) && game.lastInteraction === 'portal') {
+        } else if (!checkCollision(hb, portal) && game.lastInteraction === 'portal') {
             game.lastInteraction = null;
         }
     });
 
-    // Si el jugador cae fuera del mundo, reiniciar en el fondo
+    // Caída fuera del mundo
     if (player.y > WORLD_HEIGHT) {
-        recordDeath(); // Registrar muerte
+        recordDeath();
         player.x = 100;
         player.y = WORLD_HEIGHT - 125;
         player.speedY = 0;
     }
     
-    // Determinar animación según estado del jugador
+    // --- ANIMACIÓN DEL SPRITE ---
     if (player.climbing) {
         spriteAnimator.setAnimation('climb');
     } else if (player.speedY < -2) {
@@ -397,7 +373,6 @@ function updatePlayer() {
         spriteAnimator.setAnimation('idle');
     }
     
-    // Actualizar cámara para seguir al jugador
     camera.follow(player);
 }
 
@@ -409,13 +384,8 @@ function checkCollision(rect1, rect2) {
 }
 
 function draw() {
-    // Limpiar canvas (transparente, no rellenar fondo)
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    
-    // Guardar el estado del contexto
     ctx.save();
-    
-    // Aplicar transformación de la cámara
     ctx.translate(-camera.x, -camera.y);
 
     // Ordenar decoraciones por layer
@@ -423,20 +393,16 @@ function draw() {
         (a.layer || 0) - (b.layer || 0)
     );
 
-    // 1. Dibujar decoraciones de fondo (layer < 0)
+    // 1. Decoraciones de fondo (layer < 0)
     sortedDecorations.forEach(decoration => {
-        if ((decoration.layer || 0) < 0) {
-            drawDecoration(decoration);
-        }
+        if ((decoration.layer || 0) < 0) drawDecoration(decoration);
     });
 
-    // 2. Dibujar lianas (layer 0 - gameplay)
+    // 2. Lianas
     vines.forEach(vine => {
-        // Rellenar liana (verde limón)
         ctx.fillStyle = vine.color;
         ctx.fillRect(vine.x, vine.y, vine.width, vine.height);
         
-        // Patrón de segmentos para simular nudos
         ctx.strokeStyle = 'rgba(0, 0, 0, 0.3)';
         ctx.lineWidth = 1;
         for (let y = vine.y; y < vine.y + vine.height; y += 20) {
@@ -445,50 +411,31 @@ function draw() {
             ctx.lineTo(vine.x + vine.width, y);
             ctx.stroke();
         }
-        
-        // Borde negro grueso (estilo maqueta)
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(vine.x, vine.y, vine.width, vine.height);
     });
 
-    // 3. Dibujar plataformas (layer 0 - gameplay)
+    // 3. Plataformas estáticas
     platforms.forEach(platform => {
-        // Rellenar plataforma
         ctx.fillStyle = platform.color;
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-        
-        // Borde negro grueso (estilo maqueta)
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
     });
     
-    // 3.5. Dibujar plataformas móviles (layer 0 - gameplay)
+    // 4. Plataformas móviles
     movingPlatforms.forEach(platform => {
-        // Rellenar plataforma
         ctx.fillStyle = platform.color;
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
         
-        // Borde negro grueso (estilo maqueta)
-        ctx.strokeStyle = '#000000';
-        ctx.lineWidth = 3;
-        ctx.strokeRect(platform.x, platform.y, platform.width, platform.height);
-        
-        // Indicador de movimiento (flechas)
-        ctx.fillStyle = '#000';
+        ctx.fillStyle = 'rgba(0,0,0,0.4)';
         ctx.font = '16px Arial';
         if (platform.moveType === 'horizontal') {
-            ctx.fillText('←→', platform.x + platform.width/2 - 12, platform.y + platform.height/2 + 6);
+            ctx.fillText('←→', platform.x + platform.width / 2 - 12, platform.y + platform.height / 2 + 6);
         } else if (platform.moveType === 'vertical') {
-            ctx.fillText('↕', platform.x + platform.width/2 - 5, platform.y + platform.height/2 + 6);
+            ctx.fillText('↕', platform.x + platform.width / 2 - 5, platform.y + platform.height / 2 + 6);
         }
     });
 
-    // Dibujar secciones con animación
+    // 5. Secciones
     const time = Date.now() / 1000;
     sections.forEach(section => {
-        // Glow effect
         const pulse = Math.sin(time * 2) * 0.3 + 0.7;
         ctx.shadowBlur = 20 * pulse;
         ctx.shadowColor = section.color;
@@ -496,27 +443,23 @@ function draw() {
         ctx.fillStyle = section.color;
         ctx.fillRect(section.x, section.y, section.width, section.height);
         
-        // Icon
         ctx.shadowBlur = 0;
         ctx.font = '24px Arial';
         ctx.fillText(section.icon, section.x + 8, section.y + 30);
         
-        // Border
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.strokeRect(section.x, section.y, section.width, section.height);
     });
     
-    // Dibujar portales de salida
+    // 6. Portales de salida
     exitPortals.forEach(portal => {
         const pulse = Math.sin(time * 3) * 0.4 + 0.6;
         
-        // Portal siempre activo - dorado brillante
         ctx.shadowBlur = 30 * pulse;
         ctx.shadowColor = portal.glowColor;
         ctx.fillStyle = portal.color;
         
-        // Partículas flotantes
         for (let i = 0; i < 3; i++) {
             const particleY = portal.y - 20 - (time * 30 + i * 20) % 60;
             ctx.globalAlpha = 0.6;
@@ -525,47 +468,45 @@ function draw() {
         }
         ctx.globalAlpha = 1;
         
-        // Cuerpo del portal
+        ctx.fillStyle = portal.color;
         ctx.fillRect(portal.x, portal.y, portal.width, portal.height);
         
-        // Icono
         ctx.shadowBlur = 0;
         ctx.font = '40px Arial';
         ctx.fillStyle = '#fff';
         ctx.fillText(portal.icon, portal.x + 10, portal.y + 50);
         
-        // Indicador de progreso (solo informativo)
         if (game.visitedSections.size < game.totalSections) {
             ctx.font = '14px Arial';
             ctx.fillStyle = '#FFD700';
             const progressText = `${game.visitedSections.size}/${game.totalSections}`;
-            ctx.fillText(progressText, portal.x + portal.width/2 - 15, portal.y + portal.height + 20);
+            ctx.fillText(progressText, portal.x + portal.width / 2 - 15, portal.y + portal.height + 20);
         } else {
-            // Si completó todo, mostrar checkmark
             ctx.font = '20px Arial';
             ctx.fillStyle = '#00ff88';
-            ctx.fillText('✓', portal.x + portal.width/2 - 8, portal.y + portal.height + 20);
+            ctx.fillText('✓', portal.x + portal.width / 2 - 8, portal.y + portal.height + 20);
         }
         
-        // Borde
         ctx.strokeStyle = '#FFD700';
         ctx.lineWidth = 3;
         ctx.strokeRect(portal.x, portal.y, portal.width, portal.height);
-        
         ctx.shadowBlur = 0;
     });
 
-    // 5. Dibujar jugador animado (layer 0 - gameplay)
+    // 7. Sprite del jugador (se dibuja en coordenadas del sprite, no del hitbox)
     spriteAnimator.draw(ctx, player.x, player.y, player.facingRight);
-    
-    // 6. Dibujar decoraciones delanteras (layer > 0)
+
+    // DEBUG: descomentar para visualizar el hitbox
+    // const hb = player.hitbox;
+    // ctx.strokeStyle = 'rgba(255, 0, 0, 0.8)';
+    // ctx.lineWidth = 2;
+    // ctx.strokeRect(hb.x, hb.y, hb.width, hb.height);
+
+    // 8. Decoraciones frontales (layer > 0)
     sortedDecorations.forEach(decoration => {
-        if ((decoration.layer || 0) > 0) {
-            drawDecoration(decoration);
-        }
+        if ((decoration.layer || 0) > 0) drawDecoration(decoration);
     });
     
-    // Restaurar el estado del contexto
     ctx.restore();
 }
 
@@ -574,7 +515,6 @@ function showTooltip(section) {
     tooltip.textContent = section.title.replace(/[^\w\s]/gi, '').trim();
     tooltip.style.display = 'block';
     
-    // Ajustar posición del tooltip según la cámara
     const screenY = section.y - camera.y;
     const screenX = section.x - camera.x;
     
@@ -584,8 +524,6 @@ function showTooltip(section) {
 
 function showPortalTooltip(portal) {
     const tooltip = document.getElementById('tooltip');
-    
-    // Siempre mostrar mensaje de bienvenida
     const progress = `${game.visitedSections.size}/${game.totalSections}`;
     
     if (game.visitedSections.size === game.totalSections) {
@@ -602,7 +540,6 @@ function showPortalTooltip(portal) {
     
     tooltip.style.display = 'block';
     
-    // Ajustar posición del tooltip según la cámara
     const screenY = portal.y - camera.y;
     const screenX = portal.x - camera.x;
     
@@ -611,29 +548,24 @@ function showPortalTooltip(portal) {
 }
 
 function handlePortalCollision(portal) {
-    // Siempre permitir entrar al portal
     completeLevel(portal);
 }
 
 function completeLevel(portal) {
     game.modalOpen = true;
     
-    // Marcar nivel como completado
     const isNewCompletion = progressManager.completeLevel();
     
-    // Verificar logros globales
     if (progressManager.areAllLevelsCompleted()) {
         progressManager.unlockAchievement('master_explorer');
     }
     
-    // Mostrar modal de completado
     showCompletionModal(portal);
 }
 
 function showCompletionModal(portal) {
     const stats = progressManager.getLevelStats();
     const globalStats = progressManager.getGlobalStats();
-    
     const timeFormatted = progressManager.formatTime(stats.timeSpent);
     
     document.getElementById('modalTitle').innerHTML = '🎉 ' + portal.message + ' 🎉';
@@ -683,14 +615,11 @@ function showCompletionModal(portal) {
     document.getElementById('overlay').classList.add('active');
     document.getElementById('tooltip').style.display = 'none';
     
-    // Countdown
     let countdown = 3;
     const countdownInterval = setInterval(() => {
         countdown--;
         const countdownEl = document.getElementById('countdown');
-        if (countdownEl) {
-            countdownEl.textContent = countdown;
-        }
+        if (countdownEl) countdownEl.textContent = countdown;
         
         if (countdown <= 0) {
             clearInterval(countdownInterval);
@@ -699,7 +628,6 @@ function showCompletionModal(portal) {
     }, 1000);
 }
 
-// Función global para saltar el countdown
 window.skipToNextLevel = function(url) {
     window.location.href = url;
 };
@@ -723,41 +651,29 @@ function markAsVisited(sectionId) {
     if (!game.visitedSections.has(sectionId)) {
         game.visitedSections.add(sectionId);
         
-        // Guardar en localStorage
         const isNew = progressManager.visitSection(sectionId);
         
-        // Marcar checkpoint si existe
         const checkpoint = document.getElementById('check-' + sectionId);
-        if (checkpoint) {
-            checkpoint.classList.add('visited');
-        }
+        if (checkpoint) checkpoint.classList.add('visited');
         
         game.updateProgress();
-        
-        // Verificar logros
         checkAchievements();
-        
-        // Actualizar estado de portales
         updatePortalsState();
     }
 }
 
-// Sistema de logros
 function checkAchievements() {
-    // Primera sección visitada
     if (game.visitedSections.size === 1) {
         if (progressManager.unlockAchievement('first_section')) {
             showAchievement('🎯 Primera Exploración', 'Visitaste tu primera sección');
         }
     }
     
-    // Completar todas las secciones
     if (game.visitedSections.size === game.totalSections) {
         if (progressManager.unlockAchievement('all_sections_' + LEVEL_ID)) {
             showAchievement('⭐ Explorador Completo', 'Visitaste todas las secciones');
         }
         
-        // Sin muertes
         const stats = progressManager.getLevelStats();
         if (stats.deaths === 0) {
             if (progressManager.unlockAchievement('no_deaths_' + LEVEL_ID)) {
@@ -767,7 +683,6 @@ function checkAchievements() {
     }
 }
 
-// Mostrar notificación de logro
 function showAchievement(title, description) {
     const achievement = document.createElement('div');
     achievement.style.cssText = `
@@ -792,14 +707,12 @@ function showAchievement(title, description) {
     
     document.body.appendChild(achievement);
     
-    // Remover después de 4 segundos
     setTimeout(() => {
         achievement.style.animation = 'slideOut 0.5s ease-in';
         setTimeout(() => achievement.remove(), 500);
     }, 4000);
 }
 
-// Registrar muerte (cuando cae fuera del mundo)
 function recordDeath() {
     progressManager.recordDeath();
 }
@@ -811,13 +724,13 @@ window.handleSubmit = function(event) {
     return false;
 };
 
-// Ocultar tooltip cuando no hay proximidad
 setInterval(() => {
     let isNearSection = false;
     sections.forEach(section => {
+        const hb = player.hitbox;
         const distance = Math.sqrt(
-            Math.pow(player.x + player.width/2 - (section.x + section.width/2), 2) +
-            Math.pow(player.y + player.height/2 - (section.y + section.height/2), 2)
+            Math.pow(hb.x + hb.width / 2 - (section.x + section.width / 2), 2) +
+            Math.pow(hb.y + hb.height / 2 - (section.y + section.height / 2), 2)
         );
         if (distance < 80) isNearSection = true;
     });
@@ -830,17 +743,10 @@ function gameLoop(timestamp = 0) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
     
-    // NUEVO: Solo actualizar si el editor NO está activo
-    if (!window.gameLoopPaused) {
-        updateMovingPlatforms();
-        updatePlayer();
-        
-        // Actualizar animación del sprite
-        spriteAnimator.update(deltaTime);
-        
-        draw();
-    }
-    
+    updateMovingPlatforms();
+    updatePlayer();
+    spriteAnimator.update(deltaTime);
+    draw();
     requestAnimationFrame(gameLoop);
 }
 

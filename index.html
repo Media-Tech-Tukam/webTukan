@@ -6,7 +6,7 @@
     <title>Tukan - Diseño de Juegos para Empresas</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="rojo">
     <!-- HUD Superior -->
     <div class="hud">
         <div class="logo">🎮 TUKAN</div>
@@ -38,48 +38,42 @@
         </div>
     </div>
 
+    
+
+    <!-- Contenedor del juego -->
+    <div id="game-container">
+        <!-- Capa HTML - Contenido web detrás -->
+        <div id="html-layer">
+           
+            <!-- Bloque de texto -->
+            <div class="text-block" style="position: absolute; top: 2725px; left: 600px;">
+                <h2>UN BUEN TITULO</h2>
+                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
+            </div>
+
+            <!-- Bloque de texto -->
+            <div class="text-block" style="position: absolute; top: 2275px; left: 100px;">
+                <h2>UN BUEN TITULO</h2>
+                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
+            </div>
+
+            <!-- Bloque de texto -->
+            <div class="text-block" style="position: absolute; top: 1575px; left: 700px;">
+                <h2>UN BUEN TITULO</h2>
+                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
+            </div>
+
+        </div>
+
+        <!-- Canvas del juego encima (transparente) -->
+        <canvas id="gameCanvas"></canvas>
+    </div>
     <!-- Instrucciones -->
     <div class="instructions">
         🎯 Flechas ← → para moverte, ↑ para saltar. 🌿 En lianas: ↑ ↓ para trepar, Espacio para saltar
         <br><span style="font-size: 12px; opacity: 0.7;">Presiona <strong>E</strong> para abrir el Editor de Niveles</span>
     </div>
 
-    <!-- Contenedor del juego -->
-    <div id="game-container">
-        <!-- Capa HTML - Contenido web detrás -->
-        <div id="html-layer">
-            <!-- Bloque de texto 1 - Superior -->
-            <div class="text-block" style="position: absolute; top: 200px; left: 50px;">
-                <h2>UN BUEN TITULO</h2>
-                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
-            </div>
-
-            <!-- Bloque de texto 2 - Medio -->
-            <div class="text-block" style="position: absolute; top: 1500px; left: 700px;">
-                <h2>OTRO BUEN TITULO</h2>
-                <p>Sed diam amet, lobortis sed, dignissim sit amet, condimentum in, dupien. Pellentesque nec lacinia sit amet orci bibendum dolor vel, laoreet.</p>
-            </div>
-
-            <!-- Logo Tukan - Centro -->
-            <div class="logo-tukan" style="position: absolute; top: 1200px; left: 350px;">
-                <div style="font-size: 72px; font-weight: bold; text-align: center;">
-                    <div style="color: #FFD700;">🎮</div>
-                    <div style="font-family: Impact, sans-serif; color: #000;">TUKAN</div>
-                    <div style="font-size: 18px; color: #666;">MEDIA TECH</div>
-                </div>
-            </div>
-
-            <!-- Bloque de texto 3 - Inferior -->
-            <div class="text-block" style="position: absolute; top: 2700px; left: 400px;">
-                <h2>CONTENIDO FINAL</h2>
-                <p>Vivamus ut amet sem vitae tellus ultrices. Integer tincidunt lacinia mauris sit amet ante. Cras varius lacus id magna bibendum lacinia.</p>
-            </div>
-        </div>
-
-        <!-- Canvas del juego encima (transparente) -->
-        <canvas id="gameCanvas"></canvas>
-    </div>
-    
     <!-- Tooltip -->
     <div class="tooltip" id="tooltip"></div>
 
