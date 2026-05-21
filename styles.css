@@ -380,7 +380,7 @@ canvas {
 }
 
 .editor-panel {
-    background: rgba(0, 0, 0, 0.9);
+    background: #fff;
     padding: 20px;
     border-radius: 15px;
     border: 2px solid #00d9ff;
@@ -417,8 +417,8 @@ canvas {
 .editor-section select {
     width: 100%;
     padding: 8px;
-    background: #2d2d2d;
-    border: 1px solid #444;
+    /*background: #2d2d2d;
+    border: 1px solid #444;*/
     border-radius: 5px;
     font-size: 14px;
     margin-bottom: 10px;

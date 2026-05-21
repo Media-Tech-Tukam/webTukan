@@ -11,7 +11,7 @@ class TileEditor {
         this.canvas = document.getElementById('gameCanvas');
         this.ctx = this.canvas.getContext('2d');
         this.active = false;
-        this.gridSize = 20;
+        this.gridSize = 25;
         this.mode = 'platform';
         this.platforms = [...levelConfig.platforms];
         this.movingPlatforms = levelConfig.movingPlatforms ? [...levelConfig.movingPlatforms] : [];
@@ -101,13 +101,13 @@ class TileEditor {
                 <div class="editor-section" id="selected-props" style="display: none;">
                     <h4 style="color: #FFD700; margin: 0 0 10px 0;">📝 Propiedades</h4>
                     <label>X:</label>
-                    <input type="number" id="edit-x" step="20">
+                    <input type="number" id="edit-x" step="25">
                     <label>Y:</label>
-                    <input type="number" id="edit-y" step="20">
+                    <input type="number" id="edit-y" step="25">
                     <label>Ancho:</label>
-                    <input type="number" id="edit-width" step="20">
+                    <input type="number" id="edit-width" step="25">
                     <label>Alto:</label>
-                    <input type="number" id="edit-height" step="5">
+                    <input type="number" id="edit-height" step="25">
                     <label>Color:</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="edit-color" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
@@ -119,9 +119,9 @@ class TileEditor {
                 <div class="editor-section" id="platform-props" style="display: block;">
                     <h4 style="color: #aaa; margin: 0 0 10px 0;">Nuevas Plataformas:</h4>
                     <label>Ancho:</label>
-                    <input type="number" id="platform-width" value="200" step="20">
+                    <input type="number" id="platform-width" value="200" step="25">
                     <label>Alto:</label>
-                    <input type="number" id="platform-height" value="25" step="5">
+                    <input type="number" id="platform-height" value="25" step="25">
                     <label>Color:</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="platform-color" value="#0f3460" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
@@ -132,9 +132,9 @@ class TileEditor {
                 <div class="editor-section" id="moving-platform-props" style="display: none;">
                     <h4 style="color: #aaa; margin: 0 0 10px 0;">Nuevas Plataformas Móviles:</h4>
                     <label>Ancho:</label>
-                    <input type="number" id="moving-platform-width" value="120" step="20">
+                    <input type="number" id="moving-platform-width" value="125" step="25">
                     <label>Alto:</label>
-                    <input type="number" id="moving-platform-height" value="20" step="5">
+                    <input type="number" id="moving-platform-height" value="25" step="25">
                     <label>Color:</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="moving-platform-color" value="#ff6b6b" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
@@ -148,7 +148,7 @@ class TileEditor {
                     <label>Velocidad:</label>
                     <input type="number" id="moving-platform-speed" value="2" step="0.5" min="0.5" max="10">
                     <label>Distancia:</label>
-                    <input type="number" id="moving-platform-distance" value="200" step="20">
+                    <input type="number" id="moving-platform-distance" value="200" step="25">
                     <small style="display: block; margin-top: 5px; color: #888;">
                         La plataforma se moverá esta distancia en ambas direcciones
                     </small>
@@ -157,9 +157,9 @@ class TileEditor {
                 <div class="editor-section" id="vine-props" style="display: none;">
                     <h4 style="color: #aaa; margin: 0 0 10px 0;">Nuevas Lianas:</h4>
                     <label>Ancho:</label>
-                    <input type="number" id="vine-width" value="20" step="5">
+                    <input type="number" id="vine-width" value="25" step="25">
                     <label>Alto:</label>
-                    <input type="number" id="vine-height" value="200" step="20">
+                    <input type="number" id="vine-height" value="200" step="25">
                     <label>Color:</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="vine-color" value="#00ff88" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
@@ -170,9 +170,9 @@ class TileEditor {
                 <div class="editor-section" id="decoration-props" style="display: none;">
                     <h4 style="color: #aaa; margin: 0 0 10px 0;">Nuevas Decoraciones:</h4>
                     <label>Ancho:</label>
-                    <input type="number" id="decoration-width" value="100" step="20">
+                    <input type="number" id="decoration-width" value="100" step="25">
                     <label>Alto:</label>
-                    <input type="number" id="decoration-height" value="100" step="20">
+                    <input type="number" id="decoration-height" value="100" step="25">
                     <label>Color:</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="decoration-color" value="#ff6b6b" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
@@ -440,8 +440,8 @@ class TileEditor {
         
         if (this.resizing && (this.selectedItem.type === 'platform' || this.selectedItem.type === 'moving-platform' || this.selectedItem.type === 'decoration' || this.selectedItem.type === 'vine' || this.selectedItem.type === 'exit-portal')) {
             // Redimensionar
-            this.selectedItem.item.width = Math.max(20, this.selectedItem.item.width + dx);
-            this.selectedItem.item.height = Math.max(10, this.selectedItem.item.height + dy);
+            this.selectedItem.item.width = Math.max(25, this.selectedItem.item.width + dx);
+            this.selectedItem.item.height = Math.max(25, this.selectedItem.item.height + dy);
         } else {
             // Mover
             this.selectedItem.item.x += dx;
@@ -467,124 +467,94 @@ class TileEditor {
     }
     
     addItem() {
-        const centerX = GAME_WIDTH / 2;
-        const centerY = this.camera.y + GAME_HEIGHT / 2; // Centro de lo que se ve en pantalla
-        
+        const snap = (val) => Math.round(val / this.gridSize) * this.gridSize;
+        const centerX = snap(GAME_WIDTH / 2);
+        const centerY = snap(this.camera.y + GAME_HEIGHT / 2);
+
         if (this.mode === 'platform') {
-            const width = parseInt(document.getElementById('platform-width').value);
-            const height = parseInt(document.getElementById('platform-height').value);
+            const width = snap(parseInt(document.getElementById('platform-width').value));
+            const height = snap(parseInt(document.getElementById('platform-height').value));
             const color = document.getElementById('platform-color').value;
-            
+
             this.platforms.push({
-                x: centerX - width/2,
-                y: centerY - height/2,
-                width: width,
-                height: height,
-                color: color
+                x: snap(centerX - width / 2),
+                y: snap(centerY - height / 2),
+                width,
+                height,
+                color
             });
         } else if (this.mode === 'moving-platform') {
-            const width = parseInt(document.getElementById('moving-platform-width').value);
-            const height = parseInt(document.getElementById('moving-platform-height').value);
+            const width = snap(parseInt(document.getElementById('moving-platform-width').value));
+            const height = snap(parseInt(document.getElementById('moving-platform-height').value));
             const color = document.getElementById('moving-platform-color').value;
             const moveType = document.getElementById('moving-platform-type').value;
             const speed = parseFloat(document.getElementById('moving-platform-speed').value);
-            const distance = parseInt(document.getElementById('moving-platform-distance').value);
-            
-            const x = centerX - width/2;
-            const y = centerY - height/2;
-            
+            const distance = snap(parseInt(document.getElementById('moving-platform-distance').value));
+
+            const x = snap(centerX - width / 2);
+            const y = snap(centerY - height / 2);
+
             this.movingPlatforms.push({
-                x: x,
-                y: y,
-                width: width,
-                height: height,
-                color: color,
-                moveType: moveType,
-                speed: speed,
-                startX: moveType === 'horizontal' ? x - distance/2 : x,
-                endX: moveType === 'horizontal' ? x + distance/2 : x,
-                startY: moveType === 'vertical' ? y - distance/2 : y,
-                endY: moveType === 'vertical' ? y + distance/2 : y,
+                x, y, width, height, color, moveType, speed,
+                startX: moveType === 'horizontal' ? snap(x - distance / 2) : x,
+                endX:   moveType === 'horizontal' ? snap(x + distance / 2) : x,
+                startY: moveType === 'vertical'   ? snap(y - distance / 2) : y,
+                endY:   moveType === 'vertical'   ? snap(y + distance / 2) : y,
                 direction: 1
             });
         } else if (this.mode === 'vine') {
-            const width = parseInt(document.getElementById('vine-width').value);
-            const height = parseInt(document.getElementById('vine-height').value);
+            const width = snap(parseInt(document.getElementById('vine-width').value));
+            const height = snap(parseInt(document.getElementById('vine-height').value));
             const color = document.getElementById('vine-color').value;
-            
+
             this.vines.push({
-                x: centerX - width/2,
-                y: centerY - height/2,
-                width: width,
-                height: height,
-                color: color
+                x: snap(centerX - width / 2),
+                y: snap(centerY - height / 2),
+                width, height, color
             });
         } else if (this.mode === 'decoration') {
-            const width = parseInt(document.getElementById('decoration-width').value);
-            const height = parseInt(document.getElementById('decoration-height').value);
+            const width = snap(parseInt(document.getElementById('decoration-width').value));
+            const height = snap(parseInt(document.getElementById('decoration-height').value));
             const color = document.getElementById('decoration-color').value;
             const opacity = parseFloat(document.getElementById('decoration-opacity').value);
             const shape = document.getElementById('decoration-shape').value;
             const layer = parseInt(document.getElementById('decoration-layer').value);
-            
+
             this.decorations.push({
-                x: centerX - width/2,
-                y: centerY - height/2,
-                width: width,
-                height: height,
-                color: color,
-                opacity: opacity,
-                shape: shape,
-                layer: layer
+                x: snap(centerX - width / 2),
+                y: snap(centerY - height / 2),
+                width, height, color, opacity, shape, layer
             });
         } else if (this.mode === 'section') {
             const type = document.getElementById('section-type').value;
-            const icons = {
-                inicio: '🏠',
-                servicios: '⚙️',
-                portafolio: '🎯',
-                nosotros: '👥',
-                contacto: '📧'
-            };
-            const colors = {
-                inicio: '#FFD700',
-                servicios: '#00d9ff',
-                portafolio: '#ff00ff',
-                nosotros: '#00ff88',
-                contacto: '#ff6b6b'
-            };
-            
+            const icons  = { inicio:'🏠', servicios:'⚙️', portafolio:'🎯', nosotros:'👥', contacto:'📧' };
+            const colors = { inicio:'#FFD700', servicios:'#00d9ff', portafolio:'#ff00ff', nosotros:'#00ff88', contacto:'#ff6b6b' };
+            const size = 50; // múltiplo de 25
+
             this.sections.push({
                 id: type,
-                x: centerX - 20,
-                y: centerY - 20,
-                width: 40,
-                height: 40,
+                x: snap(centerX - size / 2),
+                y: snap(centerY - size / 2),
+                width: size, height: size,
                 color: colors[type],
                 icon: icons[type]
             });
         } else if (this.mode === 'exit-portal') {
-            const width = parseInt(document.getElementById('portal-width').value);
-            const height = parseInt(document.getElementById('portal-height').value);
+            const width = snap(parseInt(document.getElementById('portal-width').value));
+            const height = snap(parseInt(document.getElementById('portal-height').value));
             const color = document.getElementById('portal-color').value;
             const icon = document.getElementById('portal-icon').value;
             const targetUrl = document.getElementById('portal-url').value;
             const message = document.getElementById('portal-message').value;
             const nextLevelName = document.getElementById('portal-next-name').value;
             const requireAllSections = document.getElementById('portal-require-all').checked;
-            
+
             this.exitPortals.push({
-                x: centerX - width/2,
-                y: centerY - height/2,
-                width: width,
-                height: height,
-                color: color,
-                icon: icon,
+                x: snap(centerX - width / 2),
+                y: snap(centerY - height / 2),
+                width, height, color, icon,
                 glowColor: color,
-                targetUrl: targetUrl,
-                requireAllSections: requireAllSections,
-                message: message,
-                nextLevelName: nextLevelName,
+                targetUrl, requireAllSections, message, nextLevelName,
                 active: !requireAllSections
             });
         }
@@ -688,17 +658,29 @@ class TileEditor {
         this.ctx.translate(0, -this.camera.y);
         
         // Dibujar cuadrícula
-        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
-        this.ctx.lineWidth = 1;
-        for (let x = 0; x < GAME_WIDTH; x += this.gridSize) {
+        const majorEvery = this.gridSize * 5; // línea mayor cada 125px
+        const yStart = Math.floor(this.camera.y / this.gridSize) * this.gridSize;
+
+        // Líneas verticales
+        for (let x = 0; x <= GAME_WIDTH; x += this.gridSize) {
+            const isMajor = x % majorEvery === 0;
+            this.ctx.strokeStyle = isMajor
+                ? 'rgba(0, 217, 255, 0.45)'
+                : 'rgba(51, 51, 51, 0.5)';
+            this.ctx.lineWidth = isMajor ? 1.5 : 0.5;
             this.ctx.beginPath();
             this.ctx.moveTo(x, this.camera.y);
             this.ctx.lineTo(x, this.camera.y + GAME_HEIGHT);
             this.ctx.stroke();
         }
-        for (let y = Math.floor(this.camera.y / this.gridSize) * this.gridSize; 
-             y < this.camera.y + GAME_HEIGHT; 
-             y += this.gridSize) {
+
+        // Líneas horizontales
+        for (let y = yStart; y < this.camera.y + GAME_HEIGHT; y += this.gridSize) {
+            const isMajor = y % majorEvery === 0;
+            this.ctx.strokeStyle = isMajor
+                ? 'rgba(0, 217, 255, 0.45)'
+                : 'rgba(51, 51, 51, 0.5)';
+            this.ctx.lineWidth = isMajor ? 1.5 : 0.5;
             this.ctx.beginPath();
             this.ctx.moveTo(0, y);
             this.ctx.lineTo(GAME_WIDTH, y);
