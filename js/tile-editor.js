@@ -1,6 +1,6 @@
 // Tile Editor - Herramienta para diseñar niveles
 import { levelConfig } from './level-data.js';
-import { getTilePattern } from './tile-loader.js';
+import { getTilePattern, getImage } from './tile-loader.js';
 
 const AVAILABLE_TILES = [
     { label: 'Ninguno (color sólido)', value: '' },
@@ -124,13 +124,110 @@ class TileEditor {
                     <input type="number" id="edit-width" step="25">
                     <label>Alto:</label>
                     <input type="number" id="edit-height" step="25">
-                    <label>Tile:</label>
-                    <select id="edit-tile"></select>
+                    <div id="edit-tile-wrap">
+                        <label>Tile:</label>
+                        <select id="edit-tile"></select>
+                    </div>
                     <label>Color (fallback):</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="edit-color" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
                         <input type="text" id="edit-color-hex" maxlength="7" placeholder="#000000" style="flex:1; font-family:monospace;">
                     </div>
+                    <!-- Extra: plataforma móvil -->
+                    <div id="edit-mp-extra" style="display:none;">
+                        <label>Tipo movimiento:</label>
+                        <select id="edit-mp-type">
+                            <option value="horizontal">Horizontal ←→</option>
+                            <option value="vertical">Vertical ↕</option>
+                        </select>
+                        <label>Velocidad:</label>
+                        <input type="number" id="edit-mp-speed" step="0.5" min="0.5">
+                        <label>Inicio X:</label>
+                        <input type="number" id="edit-mp-startX" step="25">
+                        <label>Fin X:</label>
+                        <input type="number" id="edit-mp-endX" step="25">
+                        <label>Inicio Y:</label>
+                        <input type="number" id="edit-mp-startY" step="25">
+                        <label>Fin Y:</label>
+                        <input type="number" id="edit-mp-endY" step="25">
+                    </div>
+
+                    <!-- Extra: decoración -->
+                    <div id="edit-deco-extra" style="display:none;">
+                        <label>Opacidad:</label>
+                        <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                            <input type="range" id="edit-deco-opacity" min="0.1" max="1" step="0.1" style="flex:1;">
+                            <span id="edit-deco-opacity-val" style="color:#aaa; min-width:30px;">0.5</span>
+                        </div>
+                        <label>Forma:</label>
+                        <select id="edit-deco-shape">
+                            <option value="rect">Rectángulo</option>
+                            <option value="circle">Círculo</option>
+                            <option value="triangle">Triángulo</option>
+                        </select>
+                        <label>Layer (profundidad):</label>
+                        <input type="number" id="edit-deco-layer" min="-10" max="10" step="1">
+                        <label>Imagen SVG/PNG (opcional):</label>
+                        <input type="text" id="edit-deco-image" placeholder="assets/decorations/logo.svg">
+                        <small style="display:block; margin-top:4px; color:#888;">Vacío = usar forma de color</small>
+                    </div>
+
+                    <!-- Extra: sección interactiva -->
+                    <div id="edit-section-extra" style="display:none;">
+                        <label>Tipo:</label>
+                        <select id="edit-section-type">
+                            <option value="inicio">🏠 Inicio</option>
+                            <option value="servicios">⚙️ Servicios</option>
+                            <option value="portafolio">🎯 Portafolio</option>
+                            <option value="nosotros">👥 Nosotros</option>
+                            <option value="contacto">📧 Contacto</option>
+                        </select>
+                        <label>Imagen SVG/PNG (opcional):</label>
+                        <input type="text" id="edit-section-image" placeholder="assets/decorations/boton.svg">
+                        <small style="display:block; margin-top:4px; color:#888;">Vacío = usar ícono de emoji</small>
+                    </div>
+
+                    <!-- Extra: portal de salida -->
+                    <div id="edit-portal-extra" style="display:none;">
+                        <label>Ícono:</label>
+                        <select id="edit-portal-icon">
+                            <option value="🚪">🚪 Puerta</option>
+                            <option value="🌟">🌟 Estrella</option>
+                            <option value="🏁">🏁 Bandera</option>
+                            <option value="🎯">🎯 Diana</option>
+                            <option value="🔮">🔮 Portal</option>
+                            <option value="🏆">🏆 Trofeo</option>
+                        </select>
+                        <label>URL destino:</label>
+                        <input type="text" id="edit-portal-url" placeholder="./gracias.html">
+                        <label>Mensaje:</label>
+                        <input type="text" id="edit-portal-message">
+                        <label>Nombre siguiente nivel:</label>
+                        <input type="text" id="edit-portal-next-name">
+                        <label style="display:flex; align-items:center; gap:6px; margin-bottom:10px;">
+                            <input type="checkbox" id="edit-portal-require-all" style="width:auto; margin:0;">
+                            Requiere todas las secciones
+                        </label>
+                    </div>
+
+                    <!-- Extra: trigger -->
+                    <div id="edit-trigger-extra" style="display:none;">
+                        <label>Acción:</label>
+                        <select id="edit-trigger-action">
+                            <option value="nextSlide">▶ Siguiente slide</option>
+                            <option value="openModal">🪟 Abrir modal HTML</option>
+                            <option value="playVideo">🎬 Reproducir video</option>
+                            <option value="toggleClass">🔀 Toggle clase CSS</option>
+                        </select>
+                        <label>ID del elemento HTML:</label>
+                        <input type="text" id="edit-trigger-target" placeholder="ej: slider-1">
+                        <label>Ícono:</label>
+                        <input type="text" id="edit-trigger-icon" placeholder="▶">
+                        <label>Imagen SVG/PNG (opcional):</label>
+                        <input type="text" id="edit-trigger-image" placeholder="assets/decorations/boton.svg">
+                        <small style="display:block; margin-top:4px; color:#888;">Vacío = usar ícono de emoji</small>
+                    </div>
+
                     <button id="apply-props" class="editor-btn-primary">✓ Aplicar Cambios</button>
                 </div>
                 
@@ -212,6 +309,11 @@ class TileEditor {
                     <small style="display: block; margin-top: 5px; color: #888;">
                         -10 (fondo) → 0 (gameplay) → +10 (frente)
                     </small>
+                    <label>Imagen SVG/PNG (opcional):</label>
+                    <input type="text" id="decoration-image" placeholder="assets/decorations/logo.svg">
+                    <small style="display: block; margin-top: 5px; color: #888;">
+                        Pon los archivos en <code>assets/decorations/</code>. Si hay imagen, ignora color y forma.
+                    </small>
                 </div>
                 
                 <div class="editor-section" id="section-props" style="display: none;">
@@ -224,6 +326,9 @@ class TileEditor {
                         <option value="nosotros">👥 Nosotros</option>
                         <option value="contacto">📧 Contacto</option>
                     </select>
+                    <label>Imagen SVG/PNG (opcional):</label>
+                    <input type="text" id="section-image" placeholder="assets/decorations/boton.svg">
+                    <small style="display:block; margin-top:4px; color:#888;">Vacío = usar ícono de emoji</small>
                 </div>
                 
                 <div class="editor-section" id="exit-portal-props" style="display: none;">
@@ -279,7 +384,10 @@ class TileEditor {
                         <input type="color" id="trigger-color" value="#00d9ff" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
                         <input type="text" id="trigger-color-hex" value="#00d9ff" maxlength="7" placeholder="#00d9ff" style="flex:1; font-family:monospace;">
                     </div>
-                    <small style="display:block; margin-top:6px; color:#888;">
+                    <label>Imagen SVG/PNG (opcional):</label>
+                    <input type="text" id="trigger-image" placeholder="assets/decorations/boton.svg">
+                    <small style="display:block; margin-top:4px; color:#888;">Vacío = usar ícono de emoji</small>
+                    <small style="display:block; margin-top:2px; color:#888;">
                         El personaje activa la acción al tocarlo. Se dispara una vez por contacto.
                     </small>
                 </div>
@@ -602,23 +710,26 @@ class TileEditor {
                 width, height, color
             });
         } else if (this.mode === 'decoration') {
-            const width = snap(parseInt(document.getElementById('decoration-width').value));
-            const height = snap(parseInt(document.getElementById('decoration-height').value));
-            const color = document.getElementById('decoration-color').value;
+            const width   = snap(parseInt(document.getElementById('decoration-width').value));
+            const height  = snap(parseInt(document.getElementById('decoration-height').value));
+            const color   = document.getElementById('decoration-color').value;
             const opacity = parseFloat(document.getElementById('decoration-opacity').value);
-            const shape = document.getElementById('decoration-shape').value;
-            const layer = parseInt(document.getElementById('decoration-layer').value);
+            const shape   = document.getElementById('decoration-shape').value;
+            const layer   = parseInt(document.getElementById('decoration-layer').value);
+            const image   = document.getElementById('decoration-image').value.trim() || undefined;
 
             this.decorations.push({
                 x: snap(centerX - width / 2),
                 y: snap(centerY - height / 2),
-                width, height, color, opacity, shape, layer
+                width, height, color, opacity, shape, layer,
+                ...(image && { image })
             });
         } else if (this.mode === 'section') {
             const type = document.getElementById('section-type').value;
             const icons  = { inicio:'🏠', servicios:'⚙️', portafolio:'🎯', nosotros:'👥', contacto:'📧' };
             const colors = { inicio:'#FFD700', servicios:'#00d9ff', portafolio:'#ff00ff', nosotros:'#00ff88', contacto:'#ff6b6b' };
-            const size = 50; // múltiplo de 25
+            const size  = 50;
+            const image = document.getElementById('section-image').value.trim() || undefined;
 
             this.sections.push({
                 id: type,
@@ -626,7 +737,8 @@ class TileEditor {
                 y: snap(centerY - size / 2),
                 width: size, height: size,
                 color: colors[type],
-                icon: icons[type]
+                icon: icons[type],
+                ...(image && { image })
             });
         } else if (this.mode === 'exit-portal') {
             const width = snap(parseInt(document.getElementById('portal-width').value));
@@ -651,18 +763,17 @@ class TileEditor {
             const targetId = document.getElementById('trigger-target').value.trim();
             const icon     = document.getElementById('trigger-icon').value || '▶';
             const color    = document.getElementById('trigger-color').value;
+            const image    = document.getElementById('trigger-image').value.trim() || undefined;
             const size     = 50;
 
             this.triggers.push({
-                id:       this._triggerCounter++,
-                action,
-                targetId,
-                icon,
-                color,
+                id: this._triggerCounter++,
+                action, targetId, icon, color,
                 x:      snap(centerX - size / 2),
                 y:      snap(centerY - size / 2),
                 width:  size,
-                height: size
+                height: size,
+                ...(image && { image })
             });
         }
 
@@ -705,16 +816,20 @@ class TileEditor {
     
     updatePropertiesPanel() {
         if (!this.selectedItem) return;
-        
+
         const panel = document.getElementById('selected-props');
         panel.style.display = 'block';
-        
+
         const item = this.selectedItem.item;
+        const type = this.selectedItem.type;
+
+        // Campos base
         document.getElementById('edit-x').value = Math.round(item.x);
         document.getElementById('edit-y').value = Math.round(item.y);
         document.getElementById('edit-width').value = Math.round(item.width);
         document.getElementById('edit-height').value = Math.round(item.height);
-        
+
+        // Color
         if (item.color) {
             document.getElementById('edit-color').value = item.color;
             document.getElementById('edit-color-hex').value = item.color;
@@ -723,13 +838,57 @@ class TileEditor {
             document.getElementById('edit-color').parentElement.style.display = 'none';
         }
 
-        // Mostrar tile actual si el elemento es plataforma
+        // Tile (solo plataformas)
         const editTile = document.getElementById('edit-tile');
-        if (this.selectedItem.type === 'platform' || this.selectedItem.type === 'moving-platform') {
-            editTile.parentElement.style.display = 'block';
-            editTile.value = item.tile ?? '';
-        } else {
-            editTile.parentElement.style.display = 'none';
+        const showTile = type === 'platform' || type === 'moving-platform';
+        document.getElementById('edit-tile-wrap').style.display = showTile ? 'block' : 'none';
+        if (showTile) editTile.value = item.tile ?? '';
+
+        // Ocultar todos los extras
+        ['edit-mp-extra','edit-deco-extra','edit-section-extra','edit-portal-extra','edit-trigger-extra']
+            .forEach(id => document.getElementById(id).style.display = 'none');
+
+        // Mostrar extras según tipo
+        if (type === 'moving-platform') {
+            document.getElementById('edit-mp-extra').style.display = 'block';
+            document.getElementById('edit-mp-type').value  = item.moveType || 'horizontal';
+            document.getElementById('edit-mp-speed').value = item.speed ?? 2;
+            document.getElementById('edit-mp-startX').value = item.startX ?? item.x;
+            document.getElementById('edit-mp-endX').value   = item.endX   ?? item.x;
+            document.getElementById('edit-mp-startY').value = item.startY ?? item.y;
+            document.getElementById('edit-mp-endY').value   = item.endY   ?? item.y;
+
+        } else if (type === 'decoration') {
+            document.getElementById('edit-deco-extra').style.display = 'block';
+            const op = item.opacity ?? 0.5;
+            document.getElementById('edit-deco-opacity').value    = op;
+            document.getElementById('edit-deco-opacity-val').textContent = op;
+            document.getElementById('edit-deco-shape').value  = item.shape || 'rect';
+            document.getElementById('edit-deco-layer').value  = item.layer ?? 0;
+            document.getElementById('edit-deco-image').value = item.image || '';
+            document.getElementById('edit-deco-opacity').oninput = (e) => {
+                document.getElementById('edit-deco-opacity-val').textContent = e.target.value;
+            };
+
+        } else if (type === 'section') {
+            document.getElementById('edit-section-extra').style.display = 'block';
+            document.getElementById('edit-section-type').value  = item.id || 'inicio';
+            document.getElementById('edit-section-image').value = item.image || '';
+
+        } else if (type === 'exit-portal') {
+            document.getElementById('edit-portal-extra').style.display = 'block';
+            document.getElementById('edit-portal-icon').value         = item.icon || '🚪';
+            document.getElementById('edit-portal-url').value          = item.targetUrl || '';
+            document.getElementById('edit-portal-message').value      = item.message || '';
+            document.getElementById('edit-portal-next-name').value    = item.nextLevelName || '';
+            document.getElementById('edit-portal-require-all').checked = !!item.requireAllSections;
+
+        } else if (type === 'trigger') {
+            document.getElementById('edit-trigger-extra').style.display = 'block';
+            document.getElementById('edit-trigger-action').value = item.action   || 'nextSlide';
+            document.getElementById('edit-trigger-target').value = item.targetId || '';
+            document.getElementById('edit-trigger-icon').value   = item.icon     || '▶';
+            document.getElementById('edit-trigger-image').value  = item.image    || '';
         }
     }
     
@@ -739,27 +898,73 @@ class TileEditor {
     
     applyProperties() {
         if (!this.selectedItem) return;
-        
+
         const item = this.selectedItem.item;
-        item.x = parseFloat(document.getElementById('edit-x').value);
-        item.y = parseFloat(document.getElementById('edit-y').value);
-        item.width = parseFloat(document.getElementById('edit-width').value);
+        const type = this.selectedItem.type;
+
+        // Campos base
+        item.x      = parseFloat(document.getElementById('edit-x').value);
+        item.y      = parseFloat(document.getElementById('edit-y').value);
+        item.width  = parseFloat(document.getElementById('edit-width').value);
         item.height = parseFloat(document.getElementById('edit-height').value);
-        
-        if (item.color) {
-            const hexVal = document.getElementById('edit-color-hex').value.trim();
-            item.color = /^#[0-9a-fA-F]{6}$/.test(hexVal)
-                ? hexVal
-                : document.getElementById('edit-color').value;
+
+        // Color
+        const hexVal = document.getElementById('edit-color-hex').value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(hexVal)) {
+            item.color = hexVal;
+        } else if (document.getElementById('edit-color').value) {
+            item.color = document.getElementById('edit-color').value;
         }
 
-        if (this.selectedItem.type === 'platform' || this.selectedItem.type === 'moving-platform') {
+        // Tile
+        if (type === 'platform' || type === 'moving-platform') {
             const tileVal = document.getElementById('edit-tile').value;
-            if (tileVal) {
-                item.tile = tileVal;
-            } else {
-                delete item.tile;
-            }
+            if (tileVal) item.tile = tileVal; else delete item.tile;
+        }
+
+        // Extras por tipo
+        if (type === 'moving-platform') {
+            item.moveType = document.getElementById('edit-mp-type').value;
+            item.speed    = parseFloat(document.getElementById('edit-mp-speed').value);
+            item.startX   = parseFloat(document.getElementById('edit-mp-startX').value);
+            item.endX     = parseFloat(document.getElementById('edit-mp-endX').value);
+            item.startY   = parseFloat(document.getElementById('edit-mp-startY').value);
+            item.endY     = parseFloat(document.getElementById('edit-mp-endY').value);
+
+        } else if (type === 'decoration') {
+            item.opacity = parseFloat(document.getElementById('edit-deco-opacity').value);
+            item.shape   = document.getElementById('edit-deco-shape').value;
+            item.layer   = parseInt(document.getElementById('edit-deco-layer').value);
+            const imgVal = document.getElementById('edit-deco-image').value.trim();
+            if (imgVal) item.image = imgVal; else delete item.image;
+
+        } else if (type === 'section') {
+            const icons  = { inicio:'🏠', servicios:'⚙️', portafolio:'🎯', nosotros:'👥', contacto:'📧' };
+            const colors = { inicio:'#FFD700', servicios:'#00d9ff', portafolio:'#ff00ff', nosotros:'#00ff88', contacto:'#ff6b6b' };
+            const newType = document.getElementById('edit-section-type').value;
+            item.id    = newType;
+            item.icon  = icons[newType];
+            item.color = colors[newType];
+            document.getElementById('edit-color').value     = item.color;
+            document.getElementById('edit-color-hex').value = item.color;
+            const sImgVal = document.getElementById('edit-section-image').value.trim();
+            if (sImgVal) item.image = sImgVal; else delete item.image;
+
+        } else if (type === 'exit-portal') {
+            item.icon               = document.getElementById('edit-portal-icon').value;
+            item.glowColor          = item.color;
+            item.targetUrl          = document.getElementById('edit-portal-url').value;
+            item.message            = document.getElementById('edit-portal-message').value;
+            item.nextLevelName      = document.getElementById('edit-portal-next-name').value;
+            item.requireAllSections = document.getElementById('edit-portal-require-all').checked;
+            item.active             = !item.requireAllSections;
+
+        } else if (type === 'trigger') {
+            item.action   = document.getElementById('edit-trigger-action').value;
+            item.targetId = document.getElementById('edit-trigger-target').value.trim();
+            item.icon     = document.getElementById('edit-trigger-icon').value || '▶';
+            const tImgVal = document.getElementById('edit-trigger-image').value.trim();
+            if (tImgVal) item.image = tImgVal; else delete item.image;
         }
 
         this.draw();
@@ -962,20 +1167,32 @@ class TileEditor {
 
             this.ctx.shadowBlur  = isSelected ? 20 : 10 * pulse;
             this.ctx.shadowColor = trigger.color || '#00d9ff';
-            this.ctx.fillStyle   = trigger.color || '#00d9ff';
-            this.ctx.globalAlpha = 0.85;
-            this.ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
-            this.ctx.globalAlpha = 1;
-            this.ctx.shadowBlur  = 0;
 
-            // Ícono centrado
-            this.ctx.font      = '22px Arial';
-            this.ctx.fillStyle = '#fff';
-            this.ctx.textAlign = 'center';
-            this.ctx.fillText(trigger.icon || '▶', trigger.x + trigger.width / 2, trigger.y + trigger.height / 2 + 8);
-            this.ctx.textAlign = 'left';
+            if (trigger.image) {
+                const img = getImage(trigger.image);
+                this.ctx.globalAlpha = 0.85;
+                if (img.complete && img.naturalWidth > 0) {
+                    this.ctx.drawImage(img, trigger.x, trigger.y, trigger.width, trigger.height);
+                } else {
+                    this.ctx.fillStyle = trigger.color || '#00d9ff';
+                    this.ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+                }
+                this.ctx.globalAlpha = 1;
+            } else {
+                this.ctx.fillStyle   = trigger.color || '#00d9ff';
+                this.ctx.globalAlpha = 0.85;
+                this.ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+                this.ctx.globalAlpha = 1;
+                this.ctx.shadowBlur  = 0;
+                this.ctx.font      = '22px Arial';
+                this.ctx.fillStyle = '#fff';
+                this.ctx.textAlign = 'center';
+                this.ctx.fillText(trigger.icon || '▶', trigger.x + trigger.width / 2, trigger.y + trigger.height / 2 + 8);
+                this.ctx.textAlign = 'left';
+            }
 
-            // Label con acción + targetId
+            this.ctx.shadowBlur = 0;
+            // Label con acción + targetId (siempre visible)
             this.ctx.font      = '10px Arial';
             this.ctx.fillStyle = '#fff';
             this.ctx.fillText(`${trigger.action}`, trigger.x + 2, trigger.y - 14);
@@ -990,13 +1207,22 @@ class TileEditor {
         // Dibujar secciones
         this.sections.forEach(section => {
             const isSelected = this.selectedItem?.item === section;
-            
-            this.ctx.fillStyle = section.color;
-            this.ctx.fillRect(section.x, section.y, section.width, section.height);
-            
-            this.ctx.font = '24px Arial';
-            this.ctx.fillText(section.icon, section.x + 8, section.y + 30);
-            
+
+            if (section.image) {
+                const img = getImage(section.image);
+                if (img.complete && img.naturalWidth > 0) {
+                    this.ctx.drawImage(img, section.x, section.y, section.width, section.height);
+                } else {
+                    this.ctx.fillStyle = section.color;
+                    this.ctx.fillRect(section.x, section.y, section.width, section.height);
+                }
+            } else {
+                this.ctx.fillStyle = section.color;
+                this.ctx.fillRect(section.x, section.y, section.width, section.height);
+                this.ctx.font = '24px Arial';
+                this.ctx.fillText(section.icon, section.x + 8, section.y + 30);
+            }
+
             this.ctx.strokeStyle = isSelected ? '#FFD700' : '#fff';
             this.ctx.lineWidth = isSelected ? 3 : 2;
             this.ctx.strokeRect(section.x, section.y, section.width, section.height);
@@ -1054,11 +1280,32 @@ class TileEditor {
     
     drawDecoration(decoration) {
         const isSelected = this.selectedItem?.item === decoration;
-        
-        // Aplicar opacidad
-        this.ctx.globalAlpha = decoration.opacity || 0.5;
+
+        this.ctx.globalAlpha = decoration.opacity ?? 0.5;
+
+        if (decoration.image) {
+            const img = getImage(decoration.image);
+            if (img.complete && img.naturalWidth > 0) {
+                this.ctx.drawImage(img, decoration.x, decoration.y, decoration.width, decoration.height);
+            } else {
+                // Placeholder mientras carga
+                this.ctx.fillStyle = '#888';
+                this.ctx.fillRect(decoration.x, decoration.y, decoration.width, decoration.height);
+            }
+            this.ctx.globalAlpha = 1;
+            if (isSelected) {
+                this.ctx.strokeStyle = '#FFD700';
+                this.ctx.lineWidth = 3;
+                this.ctx.strokeRect(decoration.x, decoration.y, decoration.width, decoration.height);
+                this.ctx.fillStyle = '#fff';
+                this.ctx.font = '11px Arial';
+                this.ctx.fillText(decoration.image.split('/').pop(), decoration.x + 2, decoration.y - 4);
+            }
+            return;
+        }
+
         this.ctx.fillStyle = decoration.color;
-        
+
         if (decoration.shape === 'circle') {
             // Círculo
             const radius = Math.min(decoration.width, decoration.height) / 2;

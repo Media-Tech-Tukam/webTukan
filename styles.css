@@ -415,6 +415,7 @@ canvas {
 }
 
 .editor-section input[type="number"],
+.editor-section input[type="text"],
 .editor-section input[type="color"],
 .editor-section select {
     width: 100%;

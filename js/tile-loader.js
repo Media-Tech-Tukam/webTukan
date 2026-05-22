@@ -13,3 +13,8 @@ export function getTilePattern(ctx, src) {
     if (!img.complete || img.naturalWidth === 0) return null;
     return ctx.createPattern(img, 'repeat');
 }
+
+// Retorna el HTMLImageElement cacheado (para drawImage, no para pattern)
+export function getImage(src) {
+    return loadImage(src);
+}

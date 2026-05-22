@@ -3,7 +3,7 @@ import { levelConfig } from './level-data.js';
 import { modalContent } from './content.js';
 import { ProgressManager } from './progress-manager.js';
 import { SpriteAnimator } from './sprite-animator.js';
-import { getTilePattern } from './tile-loader.js';
+import { getTilePattern, getImage } from './tile-loader.js';
 
 // ID único de este nivel (cambiar en cada HTML)
 const LEVEL_ID = 'nivel-1';
@@ -508,30 +508,53 @@ function draw() {
         const pulse = Math.sin(time * 2) * 0.3 + 0.7;
         ctx.shadowBlur = 20 * pulse;
         ctx.shadowColor = section.color;
-        
-        ctx.fillStyle = section.color;
-        ctx.fillRect(section.x, section.y, section.width, section.height);
-        
+
+        if (section.image) {
+            const img = getImage(section.image);
+            if (img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, section.x, section.y, section.width, section.height);
+            } else {
+                ctx.fillStyle = section.color;
+                ctx.fillRect(section.x, section.y, section.width, section.height);
+            }
+        } else {
+            ctx.fillStyle = section.color;
+            ctx.fillRect(section.x, section.y, section.width, section.height);
+            ctx.shadowBlur = 0;
+            ctx.font = '24px Arial';
+            ctx.fillText(section.icon, section.x + 8, section.y + 30);
+        }
+
         ctx.shadowBlur = 0;
-        ctx.font = '24px Arial';
-        ctx.fillText(section.icon, section.x + 8, section.y + 30);
-        
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 2;
         ctx.strokeRect(section.x, section.y, section.width, section.height);
     });
-    
+
     // 6. Triggers
     triggers.forEach(trigger => {
         const pulse = Math.sin(time * 4) * 0.25 + 0.75;
         ctx.shadowBlur = 12 * pulse;
         ctx.shadowColor = trigger.color || '#00d9ff';
-        ctx.fillStyle   = trigger.color || '#00d9ff';
-        ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+
+        if (trigger.image) {
+            const img = getImage(trigger.image);
+            if (img.complete && img.naturalWidth > 0) {
+                ctx.drawImage(img, trigger.x, trigger.y, trigger.width, trigger.height);
+            } else {
+                ctx.fillStyle = trigger.color || '#00d9ff';
+                ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+            }
+        } else {
+            ctx.fillStyle = trigger.color || '#00d9ff';
+            ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+            ctx.shadowBlur = 0;
+            ctx.font = '18px Arial';
+            ctx.fillStyle = '#fff';
+            ctx.fillText(trigger.icon || '▶', trigger.x + 6, trigger.y + trigger.height - 6);
+        }
+
         ctx.shadowBlur = 0;
-        ctx.font = '18px Arial';
-        ctx.fillStyle = '#fff';
-        ctx.fillText(trigger.icon || '▶', trigger.x + 6, trigger.y + trigger.height - 6);
         ctx.strokeStyle = '#fff';
         ctx.lineWidth = 1.5;
         ctx.strokeRect(trigger.x, trigger.y, trigger.width, trigger.height);
@@ -888,15 +911,22 @@ function gameLoop(timestamp = 0) {
 }
 
 function drawDecoration(decoration) {
-    ctx.globalAlpha = decoration.opacity || 0.5;
+    ctx.globalAlpha = decoration.opacity ?? 0.5;
+
+    if (decoration.image) {
+        const img = getImage(decoration.image);
+        if (img.complete && img.naturalWidth > 0) {
+            ctx.drawImage(img, decoration.x, decoration.y, decoration.width, decoration.height);
+        }
+        ctx.globalAlpha = 1;
+        return;
+    }
+
     ctx.fillStyle = decoration.color;
-    
     if (decoration.shape === 'circle') {
         const radius = Math.min(decoration.width, decoration.height) / 2;
-        const centerX = decoration.x + decoration.width / 2;
-        const centerY = decoration.y + decoration.height / 2;
         ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+        ctx.arc(decoration.x + decoration.width / 2, decoration.y + decoration.height / 2, radius, 0, Math.PI * 2);
         ctx.fill();
     } else if (decoration.shape === 'triangle') {
         ctx.beginPath();
@@ -908,7 +938,6 @@ function drawDecoration(decoration) {
     } else {
         ctx.fillRect(decoration.x, decoration.y, decoration.width, decoration.height);
     }
-    
     ctx.globalAlpha = 1;
 }
 

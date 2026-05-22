@@ -24,28 +24,14 @@ export const levelConfig = {
         },
         {
                 x: 600,
-                y: 2675,
-                width: 200,
-                height: 25,
-                color: "#d9d9d9"
-        },
-        {
-                x: 100,
-                y: 2500,
-                width: 220,
-                height: 25,
-                color: "#c9c9c9"
-        },
-        {
-                x: 600,
                 y: 2350,
                 width: 200,
                 height: 25,
                 color: "#d6d6d6"
         },
         {
-                x: 560,
-                y: 2420,
+                x: 885,
+                y: 2445,
                 width: 180,
                 height: 25,
                 color: "#d1d1d1"
@@ -170,7 +156,7 @@ export const levelConfig = {
                 color: "#0f3460"
         },
         {
-                x: 500,
+                x: 300,
                 y: 2600,
                 width: 200,
                 height: 25,
@@ -181,16 +167,9 @@ export const levelConfig = {
     
     vines: [
         {
-                x: 360,
-                y: 2570,
-                width: 5,
-                height: 200,
-                color: "#7fff00"
-        },
-        {
-                x: 750,
+                x: 725,
                 y: 2100,
-                width: 20,
+                width: 10,
                 height: 250,
                 color: "#7FFF00"
         },
@@ -200,12 +179,19 @@ export const levelConfig = {
                 width: 20,
                 height: 300,
                 color: "#7FFF00"
+        },
+        {
+                x: 375,
+                y: 2625,
+                width: 10,
+                height: 200,
+                color: "#00ff88"
         }
 ],
     
     movingPlatforms: [
         {
-                x: 530,
+                x: 604,
                 y: 2520,
                 width: 120,
                 height: 20,
@@ -220,7 +206,7 @@ export const levelConfig = {
         },
         {
                 x: 800,
-                y: 1821.5,
+                y: 2039,
                 width: 100,
                 height: 20,
                 color: "#ffaa00",
@@ -234,34 +220,59 @@ export const levelConfig = {
     
     decorations: [
         {
-                x: 900,
-                y: 2850,
+                x: 1000,
+                y: 2825,
                 width: 80,
                 height: 80,
                 color: "#ff00ff",
                 opacity: 0.3,
                 shape: "circle",
-                layer: -5
+                layer: -5,
+                image: "assets/decorations/arbol.svg"
         },
         {
                 x: 50,
-                y: 2600,
-                width: 60,
-                height: 60,
+                y: 2950,
+                width: 75,
+                height: 50,
                 color: "#00d9ff",
-                opacity: 0.2,
+                opacity: 1,
                 shape: "triangle",
-                layer: -8
+                layer: 5,
+                image: "assets/decorations/arbusto.svg"
         },
         {
-                x: 850,
-                y: 2250,
-                width: 100,
-                height: 40,
+                x: 625,
+                y: 2300,
+                width: 25,
+                height: 50,
                 color: "#FFD700",
-                opacity: 0.4,
+                opacity: 1,
                 shape: "rect",
-                layer: 2
+                layer: 2,
+                image: "assets/decorations/flor.svg"
+        },
+        {
+                x: 75,
+                y: 2700,
+                width: 200,
+                height: 300,
+                color: "#ff6b6b",
+                opacity: 1,
+                shape: "rect",
+                layer: -5,
+                image: "assets/decorations/arbol.svg"
+        },
+        {
+                x: 225,
+                y: 2800,
+                width: 150,
+                height: 200,
+                color: "#ff6b6b",
+                opacity: 0.5,
+                shape: "rect",
+                layer: -8,
+                image: "assets/decorations/arbol.svg"
         }
 ],
     
@@ -292,55 +303,54 @@ export const levelConfig = {
                 x: 500,
                 y: 2875,
                 width: 50,
-                height: 50
+                height: 50,
+                image: "assets/decorations/boton.svg"
         }
 ],
 
-    // Zonas del mundo: 3 franjas de 1000px cada una (y=0 arriba, y=3000 abajo)
-    // Zone 1 = fondo del mundo (inicio), Zone 2 = medio, Zone 3 = cima (salida)
     zones: [
         {
-            id: 'zona-1',
-            yStart: 2000,
-            yEnd: 3000,
-            color: '#ffffff',
-            textColor: '#1a1a1a',
-            name: 'Zona Baja'
+                id: "zona-1",
+                yStart: 2000,
+                yEnd: 3000,
+                color: "#ffffff",
+                textColor: "#1a1a1a",
+                name: "Zona Baja"
         },
         {
-            id: 'zona-2',
-            yStart: 1000,
-            yEnd: 2000,
-            color: '#ff8c00',
-            textColor: '#ffffff',
-            name: 'Zona Media'
+                id: "zona-2",
+                yStart: 1000,
+                yEnd: 2000,
+                color: "#ff8c00",
+                textColor: "#ffffff",
+                name: "Zona Media"
         },
         {
-            id: 'zona-3',
-            yStart: 0,
-            yEnd: 1000,
-            color: '#0a0a0a',
-            textColor: '#ffffff',
-            name: 'Zona Alta'
+                id: "zona-3",
+                yStart: 0,
+                yEnd: 1000,
+                color: "#0a0a0a",
+                textColor: "#ffffff",
+                name: "Zona Alta"
         }
-    ],
+],
 
     sections: [
         {
                 id: "inicio",
-                x: 220,
-                y: 2690,
-                width: 40,
-                height: 40,
+                x: 200,
+                y: 2725,
+                width: 50,
+                height: 50,
                 color: "#FFD700",
                 icon: "🏠"
         },
         {
                 id: "servicios",
-                x: 790,
-                y: 2250,
-                width: 40,
-                height: 40,
+                x: 600,
+                y: 2225,
+                width: 50,
+                height: 50,
                 color: "#00d9ff",
                 icon: "⚙️"
         },
