@@ -16,14 +16,15 @@ export const levelConfig = {
         },
         {
                 x: 150,
-                y: 2880,
+                y: 2875,
                 width: 180,
                 height: 25,
-                color: "#d6d6d6"
+                color: "#d6d6d6",
+                tile: "assets/tiles/platform-default.png"
         },
         {
-                x: 570,
-                y: 2660,
+                x: 600,
+                y: 2675,
                 width: 200,
                 height: 25,
                 color: "#d9d9d9"
@@ -167,6 +168,14 @@ export const levelConfig = {
                 width: 200,
                 height: 25,
                 color: "#0f3460"
+        },
+        {
+                x: 500,
+                y: 2600,
+                width: 200,
+                height: 25,
+                color: "#0f3460",
+                tile: "assets/tiles/platform-default.png"
         }
 ],
     
@@ -196,7 +205,7 @@ export const levelConfig = {
     
     movingPlatforms: [
         {
-                x: 658,
+                x: 530,
                 y: 2520,
                 width: 120,
                 height: 20,
@@ -211,7 +220,7 @@ export const levelConfig = {
         },
         {
                 x: 800,
-                y: 1956.5,
+                y: 1821.5,
                 width: 100,
                 height: 20,
                 color: "#ffaa00",
@@ -273,6 +282,49 @@ export const levelConfig = {
         }
 ],
     
+    triggers: [
+        {
+                id: 1,
+                action: "nextSlide",
+                targetId: "slider-5",
+                icon: "▶",
+                color: "#00d9ff",
+                x: 500,
+                y: 2875,
+                width: 50,
+                height: 50
+        }
+],
+
+    // Zonas del mundo: 3 franjas de 1000px cada una (y=0 arriba, y=3000 abajo)
+    // Zone 1 = fondo del mundo (inicio), Zone 2 = medio, Zone 3 = cima (salida)
+    zones: [
+        {
+            id: 'zona-1',
+            yStart: 2000,
+            yEnd: 3000,
+            color: '#ffffff',
+            textColor: '#1a1a1a',
+            name: 'Zona Baja'
+        },
+        {
+            id: 'zona-2',
+            yStart: 1000,
+            yEnd: 2000,
+            color: '#ff8c00',
+            textColor: '#ffffff',
+            name: 'Zona Media'
+        },
+        {
+            id: 'zona-3',
+            yStart: 0,
+            yEnd: 1000,
+            color: '#0a0a0a',
+            textColor: '#ffffff',
+            name: 'Zona Alta'
+        }
+    ],
+
     sections: [
         {
                 id: "inicio",

@@ -45,30 +45,25 @@
     <div id="game-container">
         <!-- Capa HTML - Contenido web detrás -->
         <div id="html-layer">
-           <!-- franjas-->
-            <div class="franja franja-1"></div>
-            <div class="franja franja-2"></div>
-            <div class="franja franja-3"></div>
-            <div class="franja franja-4"></div>
-            <div class="franja franja-5"></div>
-            <div class="franja franja-6"></div>
+           
+            
+           
             <!-- Bloque de texto -->
-            <div class="text-block" style="position: absolute; top: 2725px; left: 600px;">
+            <div class="text-block" style="position: absolute; top: 2125px; left: 75px;">
                 <h2>UN BUEN TITULO</h2>
                 <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
             </div>
 
-            <!-- Bloque de texto -->
-            <div class="text-block" style="position: absolute; top: 2275px; left: 100px;">
-                <h2>UN BUEN TITULO</h2>
-                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
+            <!-- Imagen -->
+            <img src="assets/img/foto1.jpg" alt="Imagen descriptiva" style="position: absolute; top: 1775px; left: 700px; width: 250px; height: 350px; object-fit: cover;">
+
+            <!-- Slider de imágenes: controlar con nextSlide('slider-5') -->
+            <div class="img-slider" id="slider-5" data-interval="6000" style="position:absolute; top:2450px; left:650px; width:300px; height:425px;">
+                <img src="assets/img/foto1.jpg" class="slide active" alt="slide">
+                <img src="assets/img/foto2.jpg" class="slide" alt="slide">
+                <div class="slider-dots"><span class="dot active"></span><span class="dot"></span></div>
             </div>
 
-            <!-- Bloque de texto -->
-            <div class="text-block" style="position: absolute; top: 1575px; left: 700px;">
-                <h2>UN BUEN TITULO</h2>
-                <p>In eget sapien vitae massa rhoncus lacinia. Nullam at leo nec metus aliquam semper. Praesent tincidunt, ante nec lacinia ultrices, quam nec dictum libero, vitae bibendum turpis est ut lectus.</p>
-            </div>
 
         </div>
 
@@ -93,6 +88,35 @@
         </div>
         <div class="modal-content" id="modalContent"></div>
     </div>
+
+    <!-- Runtime de sliders: auto-avance y función global nextSlide() -->
+    <script>
+        window._sliders = {};
+
+        window.nextSlide = function(id) {
+            const s = window._sliders[id];
+            if (!s || !s.slides.length) return;
+            s.slides[s.current].classList.remove('active');
+            s.dots[s.current] && s.dots[s.current].classList.remove('active');
+            s.current = (s.current + 1) % s.slides.length;
+            s.slides[s.current].classList.add('active');
+            s.dots[s.current] && s.dots[s.current].classList.add('active');
+        };
+
+        function initSliders() {
+            document.querySelectorAll('.img-slider').forEach(function(el) {
+                const id = el.id;
+                const slides = Array.from(el.querySelectorAll('.slide'));
+                const dots   = Array.from(el.querySelectorAll('.dot'));
+                const interval = parseInt(el.dataset.interval) || 3000;
+                if (!slides.length) return;
+                window._sliders[id] = { current: 0, slides: slides, dots: dots };
+                setInterval(function() { window.nextSlide(id); }, interval);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', initSliders);
+    </script>
 
     <script type="module" src="js/game.js"></script>
     <script type="module" src="js/tile-editor.js"></script>

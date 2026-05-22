@@ -4,7 +4,9 @@
       "Bash(Get-ChildItem -Path \"C:\\\\xampp\\\\htdocs\\\\webtukan\" -Recurse -Force)",
       "Bash(Select-Object FullName, PSIsContainer)",
       "Bash(Sort-Object FullName)",
-      "Bash(git add *)"
+      "Bash(git add *)",
+      "Bash(gh repo *)",
+      "PowerShell(gh repo view Media-Tech-Tukam/webTukan --json defaultBranchRef,name)"
     ]
   }
 }

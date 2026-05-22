@@ -161,10 +161,12 @@
             width: 100%;
             height: 100%;
             pointer-events: none;
-            background-image: 
-                repeating-linear-gradient(0deg, rgba(0, 217, 255, 0.1) 0px, transparent 1px, transparent 25px),
-                repeating-linear-gradient(90deg, rgba(0, 217, 255, 0.1) 0px, transparent 1px, transparent 25px);
-            background-size: 25px 25px;
+            background-image:
+                repeating-linear-gradient(0deg,  rgba(0,217,255,0.45) 0px, rgba(0,217,255,0.45) 1.5px, transparent 1.5px, transparent 125px),
+                repeating-linear-gradient(90deg, rgba(0,217,255,0.45) 0px, rgba(0,217,255,0.45) 1.5px, transparent 1.5px, transparent 125px),
+                repeating-linear-gradient(0deg,  rgba(51,51,51,0.5)   0px, rgba(51,51,51,0.5)   0.5px, transparent 0.5px, transparent 25px),
+                repeating-linear-gradient(90deg, rgba(51,51,51,0.5)   0px, rgba(51,51,51,0.5)   0.5px, transparent 0.5px, transparent 25px);
+            background-size: 125px 125px, 125px 125px, 25px 25px, 25px 25px;
         }
 
         /* Elementos HTML en el editor */
@@ -181,12 +183,12 @@
             z-index: 1000;
         }
 
-        .html-element.text-block {
+       /* .html-element.text-block {
             background: white;
             border: 3px solid #000;
             padding: 25px;
             box-shadow: 5px 5px 0px rgba(0, 0, 0, 0.2);
-        }
+        }*/
 
         .html-element.text-block h2 {
             font-family: 'Impact', 'Arial Black', sans-serif;
@@ -329,6 +331,7 @@
                 <button class="btn" onclick="editor.addElement('image')">🖼️ Imagen</button>
                 <button class="btn" onclick="editor.addElement('logo')">🎯 Logo/Icono</button>
                 <button class="btn" onclick="editor.addElement('html')">⚙️ HTML Libre</button>
+                <button class="btn" onclick="editor.addElement('slider')">🖼️ Slider de Imágenes</button>
             </div>
 
             <!-- Propiedades del elemento seleccionado -->
@@ -380,6 +383,15 @@
                         <textarea id="prop-html" onchange="editor.updateSelectedElement()"></textarea>
                     </div>
 
+                    <div id="slider-props" class="hidden">
+                        <label>ID del slider (para el trigger):</label>
+                        <input type="text" id="prop-slider-id" onchange="editor.updateSelectedElement()" placeholder="ej: slider-1">
+                        <label>URLs de imágenes (una por línea):</label>
+                        <textarea id="prop-slider-urls" rows="5" onchange="editor.updateSelectedElement()" placeholder="https://ejemplo.com/img1.jpg&#10;https://ejemplo.com/img2.jpg"></textarea>
+                        <label>Intervalo auto-avance (ms):</label>
+                        <input type="number" id="prop-slider-interval" value="3000" step="500" onchange="editor.updateSelectedElement()">
+                    </div>
+
                     <button class="btn btn-danger" onclick="editor.deleteSelected()" style="margin-top: 15px;">🗑️ Eliminar</button>
                 </div>
             </div>
@@ -397,9 +409,10 @@
                 </label>
             </div>
 
-            <!-- Exportar -->
+            <!-- Importar / Exportar -->
             <div class="section">
                 <button class="btn btn-primary" onclick="editor.exportHTML()">📦 Exportar HTML</button>
+                <button class="btn" onclick="editor.showImportModal()">📂 Cargar HTML existente</button>
                 <button class="btn" onclick="editor.clearAll()">🗑️ Limpiar Todo</button>
             </div>
 
@@ -435,7 +448,7 @@
     </div>
 
     <!-- Modal de exportación -->
-    <div class="export-overlay" id="export-overlay" onclick="closeExportModal()"></div>
+    <div class="export-overlay" id="export-overlay" onclick="closeAllModals()"></div>
     <div class="export-modal" id="export-modal">
         <h2>📦 Código HTML Generado</h2>
         <p style="color: #aaa; margin-bottom: 15px;">
@@ -443,7 +456,18 @@
         </p>
         <textarea id="export-code" readonly></textarea>
         <button class="btn btn-primary" onclick="copyCode()" style="margin-top: 15px;">📋 Copiar al Portapapeles</button>
-        <button class="btn" onclick="closeExportModal()" style="margin-top: 15px;">Cerrar</button>
+        <button class="btn" onclick="closeAllModals()" style="margin-top: 15px;">Cerrar</button>
+    </div>
+
+    <div class="export-modal" id="import-modal">
+        <h2>📂 Cargar HTML existente</h2>
+        <p style="color: #aaa; margin-bottom: 15px;">
+            Pega el contenido del <code>&lt;div id="html-layer"&gt;</code> de tu <code>index.html</code>.<br>
+            Los elementos existentes en el editor serán reemplazados.
+        </p>
+        <textarea id="import-code" placeholder="Pega el HTML aquí..."></textarea>
+        <button class="btn btn-primary" onclick="editor.processImport()" style="margin-top: 15px;">📂 Cargar elementos</button>
+        <button class="btn" onclick="closeAllModals()" style="margin-top: 15px;">Cancelar</button>
     </div>
 
     <script>
@@ -514,6 +538,13 @@
                     element.subtitle = 'MEDIA TECH';
                 } else if (type === 'html') {
                     element.html = '<div style="padding: 20px; background: #fff; border: 2px solid #000;">\n  <h3>Contenido personalizado</h3>\n  <p>Escribe tu HTML aquí</p>\n</div>';
+                } else if (type === 'slider') {
+                    element.width    = 400;
+                    element.height   = 250;
+                    element.sliderId = 'slider-' + this.elementIdCounter;
+                    element.urls     = ['https://via.placeholder.com/400x250/333/fff?text=Slide+1',
+                                        'https://via.placeholder.com/400x250/555/fff?text=Slide+2'];
+                    element.interval = 3000;
                 }
 
                 this.elements.push(element);
@@ -557,6 +588,13 @@
                     `;
                 } else if (element.type === 'html') {
                     div.innerHTML += element.html;
+                } else if (element.type === 'slider') {
+                    const firstUrl = element.urls[0] || '';
+                    div.innerHTML += `
+                        <img src="${firstUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;">
+                            🖼 ${element.urls.length} slides · ${element.interval}ms · id: ${element.sliderId}
+                        </div>`;
                 }
 
                 document.getElementById('canvas').appendChild(div);
@@ -662,6 +700,7 @@
                 document.getElementById('image-props').classList.add('hidden');
                 document.getElementById('logo-props').classList.add('hidden');
                 document.getElementById('html-props').classList.add('hidden');
+                document.getElementById('slider-props').classList.add('hidden');
 
                 // Valores comunes
                 document.getElementById('prop-x').value = element.x;
@@ -686,6 +725,11 @@
                 } else if (element.type === 'html') {
                     document.getElementById('html-props').classList.remove('hidden');
                     document.getElementById('prop-html').value = element.html;
+                } else if (element.type === 'slider') {
+                    document.getElementById('slider-props').classList.remove('hidden');
+                    document.getElementById('prop-slider-id').value       = element.sliderId;
+                    document.getElementById('prop-slider-urls').value     = element.urls.join('\n');
+                    document.getElementById('prop-slider-interval').value = element.interval;
                 }
             },
 
@@ -719,6 +763,11 @@
                     this.selectedElement.subtitle = document.getElementById('prop-subtitle').value;
                 } else if (this.selectedElement.type === 'html') {
                     this.selectedElement.html = document.getElementById('prop-html').value;
+                } else if (this.selectedElement.type === 'slider') {
+                    this.selectedElement.sliderId = document.getElementById('prop-slider-id').value.trim();
+                    this.selectedElement.urls     = document.getElementById('prop-slider-urls').value
+                        .split('\n').map(u => u.trim()).filter(u => u);
+                    this.selectedElement.interval = parseInt(document.getElementById('prop-slider-interval').value) || 3000;
                 }
 
                 this.updateElementDOM(this.selectedElement);
@@ -763,6 +812,16 @@
                     if (label) div.appendChild(label);
                     if (handle) div.appendChild(handle);
                     div.innerHTML += element.html;
+                } else if (element.type === 'slider') {
+                    div.innerHTML = '';
+                    if (label) div.appendChild(label);
+                    if (handle) div.appendChild(handle);
+                    const firstUrl = element.urls[0] || '';
+                    div.innerHTML += `
+                        <img src="${firstUrl}" style="width:100%;height:100%;object-fit:cover;display:block;">
+                        <div style="position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.55);color:#fff;font-size:11px;padding:3px 8px;border-radius:10px;">
+                            🖼 ${element.urls.length} slides · ${element.interval}ms · id: ${element.sliderId}
+                        </div>`;
                 }
             },
 
@@ -829,17 +888,118 @@
             <div style="position: absolute; top: ${el.y}px; left: ${el.x}px; width: ${el.width}px; height: ${el.height}px;">
                 ${el.html}
             </div>\n`;
+                    } else if (el.type === 'slider') {
+                        const slides = el.urls.map(url =>
+                            `\n                <img src="${url}" class="slide${el.urls.indexOf(url) === 0 ? ' active' : ''}" alt="slide">`
+                        ).join('');
+                        const dots = el.urls.map((_, i) =>
+                            `<span class="dot${i === 0 ? ' active' : ''}"></span>`
+                        ).join('');
+                        html += `
+            <!-- Slider de imágenes: controlar con nextSlide('${el.sliderId}') -->
+            <div class="img-slider" id="${el.sliderId}" data-interval="${el.interval}" style="position:absolute; top:${el.y}px; left:${el.x}px; width:${el.width}px; height:${el.height}px;">${slides}
+                <div class="slider-dots">${dots}</div>
+            </div>\n`;
                     }
                 });
 
                 document.getElementById('export-code').value = html;
                 document.getElementById('export-modal').classList.add('active');
                 document.getElementById('export-overlay').classList.add('active');
+            },
+
+            showImportModal() {
+                document.getElementById('import-code').value = '';
+                document.getElementById('import-modal').classList.add('active');
+                document.getElementById('export-overlay').classList.add('active');
+            },
+
+            processImport() {
+                const raw = document.getElementById('import-code').value.trim();
+                if (!raw) return;
+
+                const doc = new DOMParser().parseFromString(`<body>${raw}</body>`, 'text/html');
+
+                // Limpiar editor silenciosamente
+                this.elements = [];
+                document.querySelectorAll('.html-element').forEach(el => el.remove());
+                this.selectedElement = null;
+                document.getElementById('properties-section').style.display = 'none';
+
+                let imported = 0;
+
+                doc.body.childNodes.forEach(node => {
+                    if (node.nodeType !== 1) return; // saltar comentarios y texto
+
+                    const el = node;
+                    const top  = parseInt(el.style.top)    || 0;
+                    const left = parseInt(el.style.left)   || 0;
+                    const w    = parseInt(el.style.width)  || 350;
+                    const h    = parseInt(el.style.height) || 200;
+
+                    // Saltar elementos decorativos del juego
+                    if (el.classList.contains('franja')) return;
+
+                    let element = null;
+
+                    if (el.classList.contains('text-block')) {
+                        element = {
+                            id: `element-${this.elementIdCounter++}`,
+                            type: 'text-block',
+                            x: left, y: top, width: 350, height: 200,
+                            title:   el.querySelector('h2')?.textContent.trim() || '',
+                            content: el.querySelector('p')?.textContent.trim()  || ''
+                        };
+                    } else if (el.tagName === 'IMG') {
+                        element = {
+                            id: `element-${this.elementIdCounter++}`,
+                            type: 'image',
+                            x: left, y: top, width: w, height: h,
+                            url: el.getAttribute('src') || '',
+                            alt: el.getAttribute('alt') || ''
+                        };
+                    } else if (el.classList.contains('logo-tukan')) {
+                        const divs = el.querySelectorAll('div > div');
+                        element = {
+                            id: `element-${this.elementIdCounter++}`,
+                            type: 'logo',
+                            x: left, y: top, width: 200, height: 200,
+                            icon:     divs[0]?.textContent.trim() || '🎮',
+                            text:     divs[1]?.textContent.trim() || 'TUKAN',
+                            subtitle: divs[2]?.textContent.trim() || ''
+                        };
+                    } else if (el.tagName === 'DIV') {
+                        element = {
+                            id: `element-${this.elementIdCounter++}`,
+                            type: 'html',
+                            x: left, y: top, width: w, height: h,
+                            html: el.innerHTML.trim()
+                        };
+                    }
+
+                    if (element) {
+                        this.elements.push(element);
+                        this.renderElement(element);
+                        imported++;
+                    }
+                });
+
+                this.updateElementCount();
+                closeAllModals();
+
+                // Scroll al primer elemento importado
+                if (this.elements.length > 0) {
+                    const workspace = document.querySelector('.workspace');
+                    workspace.scrollTop = Math.max(0, this.elements[0].y - 100);
+                }
+
+                alert(`✅ ${imported} elemento(s) cargado(s) correctamente`);
             }
         };
 
-        function closeExportModal() {
+        function closeAllModals() {
             document.getElementById('export-modal').classList.remove('active');
+            document.getElementById('import-modal').classList.remove('active');
             document.getElementById('export-overlay').classList.remove('active');
         }
 

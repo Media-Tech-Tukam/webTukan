@@ -3,6 +3,7 @@ import { levelConfig } from './level-data.js';
 import { modalContent } from './content.js';
 import { ProgressManager } from './progress-manager.js';
 import { SpriteAnimator } from './sprite-animator.js';
+import { getTilePattern } from './tile-loader.js';
 
 // ID único de este nivel (cambiar en cada HTML)
 const LEVEL_ID = 'nivel-1';
@@ -79,6 +80,8 @@ const game = {
     modalOpen: false,
     lastInteraction: null,
     totalSections: 0,
+    currentZone: null,
+    textColor: '#1a1a1a',
     
     updateProgress() {
         const visited = this.visitedSections.size;
@@ -138,6 +141,8 @@ const vines = levelConfig.vines || [];
 const movingPlatforms = levelConfig.movingPlatforms || [];
 const decorations = levelConfig.decorations || [];
 const exitPortals = levelConfig.exitPortals || [];
+const triggers    = levelConfig.triggers    || [];
+const zones       = levelConfig.zones       || [];
 const sections = levelConfig.sections.map(section => ({
     ...section,
     title: modalContent[section.id]?.title || `📄 ${section.id}`,
@@ -310,6 +315,8 @@ function updatePlayer() {
     // --- SECCIONES ---
     sections.forEach(section => {
         const hb = player.hitbox;
+        const colliding = checkCollision(hb, section); // evaluar ANTES de resolver física
+
         const distance = Math.sqrt(
             Math.pow(hb.x + hb.width / 2 - (section.x + section.width / 2), 2) +
             Math.pow(hb.y + hb.height / 2 - (section.y + section.height / 2), 2)
@@ -319,13 +326,16 @@ function updatePlayer() {
             showTooltip(section);
         }
 
-        if (checkCollision(hb, section) && !game.modalOpen && game.lastInteraction !== section.id) {
+        if (colliding && !game.modalOpen && game.lastInteraction !== section.id) {
             showModal(section);
             markAsVisited(section.id);
             game.lastInteraction = section.id;
-        } else if (!checkCollision(hb, section) && game.lastInteraction === section.id) {
+        } else if (!colliding && game.lastInteraction === section.id) {
             game.lastInteraction = null;
         }
+
+        // Física DESPUÉS: el modal ya fue disparado si aplica
+        resolvePhysicalCollision(section);
     });
     
     // --- PORTALES ---
@@ -346,6 +356,23 @@ function updatePlayer() {
         } else if (!checkCollision(hb, portal) && game.lastInteraction === 'portal') {
             game.lastInteraction = null;
         }
+    });
+
+    // --- TRIGGERS (botones que actúan sobre el HTML) ---
+    triggers.forEach(trigger => {
+        const hb = player.hitbox; // hitbox fresco tras resolver colisiones anteriores
+        const key = 'trigger-' + trigger.id;
+        const colliding = checkCollision(hb, trigger);
+
+        if (colliding && game.lastInteraction !== key) {
+            executeTriggerAction(trigger);
+            game.lastInteraction = key;
+        } else if (!colliding && game.lastInteraction === key) {
+            game.lastInteraction = null;
+        }
+
+        // Física DESPUÉS: el jugador ya fue contado como tocando el trigger
+        resolvePhysicalCollision(trigger);
     });
 
     // Caída fuera del mundo
@@ -383,13 +410,53 @@ function checkCollision(rect1, rect2) {
            rect1.y + rect1.height > rect2.y;
 }
 
+// Resolución física: empuja al jugador fuera del objeto por el eje de menor solapamiento
+// Hitbox: x = player.x+20, y = player.y+25, w=35, h=50
+function resolvePhysicalCollision(obj) {
+    const hb = player.hitbox;
+    if (!checkCollision(hb, obj)) return;
+
+    const overlapLeft   = (hb.x + hb.width)  - obj.x;
+    const overlapRight  = (obj.x + obj.width) - hb.x;
+    const overlapTop    = (hb.y + hb.height)  - obj.y;
+    const overlapBottom = (obj.y + obj.height) - hb.y;
+
+    const minX = Math.min(overlapLeft, overlapRight);
+    const minY = Math.min(overlapTop,  overlapBottom);
+
+    if (minX < minY) {
+        // Colisión lateral
+        if (overlapLeft < overlapRight) {
+            player.x = obj.x - 55;             // empujar a la izquierda
+        } else {
+            player.x = obj.x + obj.width - 20; // empujar a la derecha
+        }
+        player.speedX = 0;
+    } else {
+        if (overlapTop < overlapBottom) {
+            // Golpe desde arriba (aterrizar encima)
+            if (player.speedY >= 0) {
+                player.y      = obj.y - 75;
+                player.speedY = 0;
+                player.jumping = false;
+            }
+        } else {
+            // Golpe desde abajo (cortar el salto)
+            if (player.speedY < 0) {
+                player.y      = obj.y + obj.height - 25;
+                player.speedY = 0;
+            }
+        }
+    }
+}
+
 function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.save();
     ctx.translate(-camera.x, -camera.y);
 
     // Ordenar decoraciones por layer
-    const sortedDecorations = [...decorations].sort((a, b) => 
+    const sortedDecorations = [...decorations].sort((a, b) =>
         (a.layer || 0) - (b.layer || 0)
     );
 
@@ -415,13 +482,15 @@ function draw() {
 
     // 3. Plataformas estáticas
     platforms.forEach(platform => {
-        ctx.fillStyle = platform.color;
+        const pattern = platform.tile ? getTilePattern(ctx, platform.tile) : null;
+        ctx.fillStyle = pattern ?? platform.color;
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
     });
-    
+
     // 4. Plataformas móviles
     movingPlatforms.forEach(platform => {
-        ctx.fillStyle = platform.color;
+        const pattern = platform.tile ? getTilePattern(ctx, platform.tile) : null;
+        ctx.fillStyle = pattern ?? platform.color;
         ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
         
         ctx.fillStyle = 'rgba(0,0,0,0.4)';
@@ -452,7 +521,23 @@ function draw() {
         ctx.strokeRect(section.x, section.y, section.width, section.height);
     });
     
-    // 6. Portales de salida
+    // 6. Triggers
+    triggers.forEach(trigger => {
+        const pulse = Math.sin(time * 4) * 0.25 + 0.75;
+        ctx.shadowBlur = 12 * pulse;
+        ctx.shadowColor = trigger.color || '#00d9ff';
+        ctx.fillStyle   = trigger.color || '#00d9ff';
+        ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+        ctx.shadowBlur = 0;
+        ctx.font = '18px Arial';
+        ctx.fillStyle = '#fff';
+        ctx.fillText(trigger.icon || '▶', trigger.x + 6, trigger.y + trigger.height - 6);
+        ctx.strokeStyle = '#fff';
+        ctx.lineWidth = 1.5;
+        ctx.strokeRect(trigger.x, trigger.y, trigger.width, trigger.height);
+    });
+
+    // 7. Portales de salida
     exitPortals.forEach(portal => {
         const pulse = Math.sin(time * 3) * 0.4 + 0.6;
         
@@ -662,6 +747,26 @@ function markAsVisited(sectionId) {
     }
 }
 
+function executeTriggerAction(trigger) {
+    switch (trigger.action) {
+        case 'nextSlide':
+            if (window.nextSlide) window.nextSlide(trigger.targetId);
+            break;
+        case 'openModal':
+            const el = document.getElementById(trigger.targetId);
+            if (el) el.style.display = 'block';
+            break;
+        case 'toggleClass':
+            const target = document.getElementById(trigger.targetId);
+            if (target) target.classList.toggle(trigger.cssClass || 'active');
+            break;
+        case 'playVideo':
+            const video = document.getElementById(trigger.targetId);
+            if (video) video.play();
+            break;
+    }
+}
+
 function checkAchievements() {
     if (game.visitedSections.size === 1) {
         if (progressManager.unlockAchievement('first_section')) {
@@ -739,12 +844,44 @@ setInterval(() => {
     }
 }, 100);
 
+// Retorna true si el color hexadecimal es claro (luminancia > 0.5)
+function isLightColor(hex) {
+    const clean = hex.replace('#', '');
+    const r = parseInt(clean.slice(0, 2), 16);
+    const g = parseInt(clean.slice(2, 4), 16);
+    const b = parseInt(clean.slice(4, 6), 16);
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255 > 0.5;
+}
+
+function updateZone() {
+    if (!zones.length) return;
+    const py = player.y;
+    const newZone = zones.find(z => py >= z.yStart && py < z.yEnd) || zones[zones.length - 1];
+
+    if (!game.currentZone || game.currentZone.id !== newZone.id) {
+        const previousZone = game.currentZone;
+        game.currentZone = newZone;
+        game.textColor = newZone.textColor || (isLightColor(newZone.color) ? '#1a1a1a' : '#ffffff');
+
+        // El fondo va en el contenedor HTML, no en el canvas (canvas debe ser transparente)
+        const container = document.getElementById('game-container');
+        if (container) container.style.background = newZone.color;
+
+        // Evento para conectar música u otros efectos en el futuro:
+        // window.addEventListener('zoneChange', e => playMusic(e.detail.zone.id))
+        window.dispatchEvent(new CustomEvent('zoneChange', {
+            detail: { zone: newZone, previousZone }
+        }));
+    }
+}
+
 function gameLoop(timestamp = 0) {
     const deltaTime = timestamp - lastTime;
     lastTime = timestamp;
-    
+
     updateMovingPlatforms();
     updatePlayer();
+    updateZone();
     spriteAnimator.update(deltaTime);
     draw();
     requestAnimationFrame(gameLoop);

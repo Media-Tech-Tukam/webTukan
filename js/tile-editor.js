@@ -1,5 +1,11 @@
 // Tile Editor - Herramienta para diseñar niveles
 import { levelConfig } from './level-data.js';
+import { getTilePattern } from './tile-loader.js';
+
+const AVAILABLE_TILES = [
+    { label: 'Ninguno (color sólido)', value: '' },
+    { label: 'Default',                value: 'assets/tiles/platform-default.png' },
+];
 
 // Dimensiones fijas del juego
 const GAME_WIDTH = 1100;
@@ -18,7 +24,16 @@ class TileEditor {
         this.vines = levelConfig.vines ? [...levelConfig.vines] : [];
         this.decorations = levelConfig.decorations ? [...levelConfig.decorations] : [];
         this.exitPortals = levelConfig.exitPortals ? [...levelConfig.exitPortals] : [];
+        this.triggers    = levelConfig.triggers    ? [...levelConfig.triggers]    : [];
         this.sections = [...levelConfig.sections];
+        this.zones = levelConfig.zones
+            ? levelConfig.zones.map(z => ({ ...z }))
+            : [
+                { id: 'zona-1', yStart: 2000, yEnd: 3000, color: '#ffffff', textColor: '#1a1a1a', name: 'Zona Baja' },
+                { id: 'zona-2', yStart: 1000, yEnd: 2000, color: '#ffffff', textColor: '#1a1a1a', name: 'Zona Media' },
+                { id: 'zona-3', yStart: 0,    yEnd: 1000, color: '#ffffff', textColor: '#1a1a1a', name: 'Zona Alta' }
+            ];
+        this._triggerCounter = this.triggers.length;
         this.selectedItem = null;
         this.dragging = false;
         this.resizing = false;
@@ -90,6 +105,7 @@ class TileEditor {
                         <option value="decoration">Decoración</option>
                         <option value="section">Botón Interactivo</option>
                         <option value="exit-portal">Portal de Salida</option>
+                        <option value="trigger">⚡ Trigger (actúa en HTML)</option>
                     </select>
                 </div>
                 
@@ -108,7 +124,9 @@ class TileEditor {
                     <input type="number" id="edit-width" step="25">
                     <label>Alto:</label>
                     <input type="number" id="edit-height" step="25">
-                    <label>Color:</label>
+                    <label>Tile:</label>
+                    <select id="edit-tile"></select>
+                    <label>Color (fallback):</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="edit-color" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
                         <input type="text" id="edit-color-hex" maxlength="7" placeholder="#000000" style="flex:1; font-family:monospace;">
@@ -122,7 +140,9 @@ class TileEditor {
                     <input type="number" id="platform-width" value="200" step="25">
                     <label>Alto:</label>
                     <input type="number" id="platform-height" value="25" step="25">
-                    <label>Color:</label>
+                    <label>Tile:</label>
+                    <select id="platform-tile"></select>
+                    <label>Color (fallback):</label>
                     <div style="display:flex; gap:6px; align-items:center;">
                         <input type="color" id="platform-color" value="#0f3460" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
                         <input type="text" id="platform-color-hex" value="#0f3460" maxlength="7" placeholder="#0f3460" style="flex:1; font-family:monospace;">
@@ -241,13 +261,46 @@ class TileEditor {
                     </small>
                 </div>
                 
+                <div class="editor-section" id="trigger-props" style="display: none;">
+                    <h4 style="color: #aaa; margin: 0 0 10px 0;">Nuevo Trigger:</h4>
+                    <label>Acción:</label>
+                    <select id="trigger-action">
+                        <option value="nextSlide">▶ Siguiente slide (slider)</option>
+                        <option value="openModal">🪟 Abrir modal HTML</option>
+                        <option value="playVideo">🎬 Reproducir video</option>
+                        <option value="toggleClass">🔀 Toggle clase CSS</option>
+                    </select>
+                    <label>ID del elemento HTML:</label>
+                    <input type="text" id="trigger-target" placeholder="ej: slider-1, mi-modal" style="width:100%; padding:6px; background:#2d2d2d; border:1px solid #444; border-radius:4px; color:#fff; margin-bottom:8px;">
+                    <label>Ícono:</label>
+                    <input type="text" id="trigger-icon" value="▶" style="width:100%; padding:6px; background:#2d2d2d; border:1px solid #444; border-radius:4px; color:#fff; margin-bottom:8px;">
+                    <label>Color:</label>
+                    <div style="display:flex; gap:6px; align-items:center;">
+                        <input type="color" id="trigger-color" value="#00d9ff" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="trigger-color-hex" value="#00d9ff" maxlength="7" placeholder="#00d9ff" style="flex:1; font-family:monospace;">
+                    </div>
+                    <small style="display:block; margin-top:6px; color:#888;">
+                        El personaje activa la acción al tocarlo. Se dispara una vez por contacto.
+                    </small>
+                </div>
+
+                <div class="editor-section" id="zones-props">
+                    <h4 style="color: #aaa; margin: 0 0 10px 0;">🎨 Colores de Zona:</h4>
+                    ${this.zones.map((z, i) => `
+                    <label>${z.name} (y${z.yStart}–${z.yEnd}):</label>
+                    <div style="display:flex; gap:6px; align-items:center; margin-bottom:8px;">
+                        <input type="color" id="zone-color-${i}" value="${z.color}" style="width:36px; height:28px; padding:0; border:none; cursor:pointer;">
+                        <input type="text" id="zone-color-hex-${i}" value="${z.color}" maxlength="7" placeholder="#ffffff" style="flex:1; font-family:monospace;">
+                    </div>`).join('')}
+                </div>
+
                 <div class="editor-section">
                     <label>
                         <input type="checkbox" id="snap-to-grid" checked>
                         Ajustar a cuadrícula (${this.gridSize}px)
                     </label>
                 </div>
-                
+
                 <div class="editor-section">
                     <button id="export-level" class="editor-btn-primary">📦 Exportar Nivel</button>
                 </div>
@@ -278,8 +331,10 @@ class TileEditor {
                 this.mode === 'decoration' ? 'block' : 'none';
             document.getElementById('section-props').style.display = 
                 this.mode === 'section' ? 'block' : 'none';
-            document.getElementById('exit-portal-props').style.display = 
+            document.getElementById('exit-portal-props').style.display =
                 this.mode === 'exit-portal' ? 'block' : 'none';
+            document.getElementById('trigger-props').style.display =
+                this.mode === 'trigger' ? 'block' : 'none';
         });
         
         // Actualizar el valor de opacidad mientras se mueve el slider
@@ -299,6 +354,30 @@ class TileEditor {
         this.setupColorPair('decoration-color', 'decoration-color-hex');
         this.setupColorPair('portal-color', 'portal-color-hex');
         this.setupColorPair('edit-color', 'edit-color-hex');
+        this.setupColorPair('trigger-color', 'trigger-color-hex');
+
+        // Color pickers de zonas
+        this.zones.forEach((zone, i) => {
+            this.setupColorPair(`zone-color-${i}`, `zone-color-hex-${i}`);
+            const picker = document.getElementById(`zone-color-${i}`);
+            const hex    = document.getElementById(`zone-color-hex-${i}`);
+            const update = () => {
+                const val = picker.value;
+                zone.color = val;
+                // textColor automático por luminancia
+                const r = parseInt(val.slice(1,3),16), g = parseInt(val.slice(3,5),16), b = parseInt(val.slice(5,7),16);
+                zone.textColor = (0.299*r + 0.587*g + 0.114*b)/255 > 0.5 ? '#1a1a1a' : '#ffffff';
+            };
+            picker.addEventListener('input', update);
+            hex.addEventListener('input', update);
+        });
+
+        // Poblar selects de tiles
+        const tileOptions = AVAILABLE_TILES.map(t =>
+            `<option value="${t.value}">${t.label}</option>`
+        ).join('');
+        document.getElementById('platform-tile').innerHTML = tileOptions;
+        document.getElementById('edit-tile').innerHTML = tileOptions;
     }
     
     // Sincroniza un input[type=color] con su input[type=text] hex compañero
@@ -370,7 +449,12 @@ class TileEditor {
             pos.y >= p.y && pos.y <= p.y + p.height
         );
         
-        const clickedSection = this.sections.find(s => 
+        const clickedTrigger = this.triggers.find(t =>
+            pos.x >= t.x && pos.x <= t.x + t.width &&
+            pos.y >= t.y && pos.y <= t.y + t.height
+        );
+
+        const clickedSection = this.sections.find(s =>
             pos.x >= s.x && pos.x <= s.x + s.width &&
             pos.y >= s.y && pos.y <= s.y + s.height
         );
@@ -395,7 +479,12 @@ class TileEditor {
             pos.y >= p.y && pos.y <= p.y + p.height
         );
         
-        if (clickedPortal) {
+        if (clickedTrigger) {
+            this.selectedItem = { type: 'trigger', item: clickedTrigger };
+            this.dragging = true;
+            this.resizing = e.shiftKey;
+            this.updatePropertiesPanel();
+        } else if (clickedPortal) {
             this.selectedItem = { type: 'exit-portal', item: clickedPortal };
             this.dragging = true;
             this.resizing = e.shiftKey;
@@ -475,13 +564,13 @@ class TileEditor {
             const width = snap(parseInt(document.getElementById('platform-width').value));
             const height = snap(parseInt(document.getElementById('platform-height').value));
             const color = document.getElementById('platform-color').value;
+            const tile  = document.getElementById('platform-tile').value || undefined;
 
             this.platforms.push({
                 x: snap(centerX - width / 2),
                 y: snap(centerY - height / 2),
-                width,
-                height,
-                color
+                width, height, color,
+                ...(tile && { tile })
             });
         } else if (this.mode === 'moving-platform') {
             const width = snap(parseInt(document.getElementById('moving-platform-width').value));
@@ -557,11 +646,29 @@ class TileEditor {
                 targetUrl, requireAllSections, message, nextLevelName,
                 active: !requireAllSections
             });
+        } else if (this.mode === 'trigger') {
+            const action   = document.getElementById('trigger-action').value;
+            const targetId = document.getElementById('trigger-target').value.trim();
+            const icon     = document.getElementById('trigger-icon').value || '▶';
+            const color    = document.getElementById('trigger-color').value;
+            const size     = 50;
+
+            this.triggers.push({
+                id:       this._triggerCounter++,
+                action,
+                targetId,
+                icon,
+                color,
+                x:      snap(centerX - size / 2),
+                y:      snap(centerY - size / 2),
+                width:  size,
+                height: size
+            });
         }
-        
+
         this.draw();
     }
-    
+
     deleteItem() {
         if (!this.selectedItem) {
             alert('Selecciona un elemento primero');
@@ -583,6 +690,9 @@ class TileEditor {
         } else if (this.selectedItem.type === 'exit-portal') {
             const index = this.exitPortals.indexOf(this.selectedItem.item);
             if (index > -1) this.exitPortals.splice(index, 1);
+        } else if (this.selectedItem.type === 'trigger') {
+            const index = this.triggers.indexOf(this.selectedItem.item);
+            if (index > -1) this.triggers.splice(index, 1);
         } else {
             const index = this.sections.indexOf(this.selectedItem.item);
             if (index > -1) this.sections.splice(index, 1);
@@ -612,6 +722,15 @@ class TileEditor {
         } else {
             document.getElementById('edit-color').parentElement.style.display = 'none';
         }
+
+        // Mostrar tile actual si el elemento es plataforma
+        const editTile = document.getElementById('edit-tile');
+        if (this.selectedItem.type === 'platform' || this.selectedItem.type === 'moving-platform') {
+            editTile.parentElement.style.display = 'block';
+            editTile.value = item.tile ?? '';
+        } else {
+            editTile.parentElement.style.display = 'none';
+        }
     }
     
     hidePropertiesPanel() {
@@ -628,13 +747,21 @@ class TileEditor {
         item.height = parseFloat(document.getElementById('edit-height').value);
         
         if (item.color) {
-            // Leer del hex si es válido, sino del picker
             const hexVal = document.getElementById('edit-color-hex').value.trim();
-            item.color = /^#[0-9a-fA-F]{6}$/.test(hexVal) 
-                ? hexVal 
+            item.color = /^#[0-9a-fA-F]{6}$/.test(hexVal)
+                ? hexVal
                 : document.getElementById('edit-color').value;
         }
-        
+
+        if (this.selectedItem.type === 'platform' || this.selectedItem.type === 'moving-platform') {
+            const tileVal = document.getElementById('edit-tile').value;
+            if (tileVal) {
+                item.tile = tileVal;
+            } else {
+                delete item.tile;
+            }
+        }
+
         this.draw();
     }
     
@@ -652,11 +779,19 @@ class TileEditor {
         }
         
         this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
-        
+
         // Guardar estado y aplicar transformación de cámara
         this.ctx.save();
         this.ctx.translate(0, -this.camera.y);
-        
+
+        // Fondos de zona (semitransparentes para ver el HTML debajo)
+        this.zones.forEach(zone => {
+            this.ctx.globalAlpha = 0.35;
+            this.ctx.fillStyle = zone.color;
+            this.ctx.fillRect(0, zone.yStart, GAME_WIDTH, zone.yEnd - zone.yStart);
+        });
+        this.ctx.globalAlpha = 1;
+
         // Dibujar cuadrícula
         const majorEvery = this.gridSize * 5; // línea mayor cada 125px
         const yStart = Math.floor(this.camera.y / this.gridSize) * this.gridSize;
@@ -702,8 +837,9 @@ class TileEditor {
         // Dibujar plataformas
         this.platforms.forEach(platform => {
             const isSelected = this.selectedItem?.item === platform;
-            
-            this.ctx.fillStyle = platform.color;
+
+            const pattern = platform.tile ? getTilePattern(this.ctx, platform.tile) : null;
+            this.ctx.fillStyle = pattern ?? platform.color;
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             this.ctx.strokeStyle = isSelected ? '#FFD700' : '#00d9ff';
             this.ctx.lineWidth = isSelected ? 3 : 2;
@@ -745,9 +881,10 @@ class TileEditor {
             this.ctx.setLineDash([]);
             
             // Dibujar plataforma
-            this.ctx.fillStyle = platform.color;
+            const mpPattern = platform.tile ? getTilePattern(this.ctx, platform.tile) : null;
+            this.ctx.fillStyle = mpPattern ?? platform.color;
             this.ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
-            
+
             // Borde
             this.ctx.strokeStyle = isSelected ? '#FFD700' : '#fff';
             this.ctx.lineWidth = isSelected ? 3 : 2;
@@ -818,6 +955,38 @@ class TileEditor {
             }
         });
         
+        // Dibujar triggers
+        this.triggers.forEach(trigger => {
+            const isSelected = this.selectedItem?.item === trigger;
+            const pulse = Math.sin(Date.now() / 250) * 0.2 + 0.8;
+
+            this.ctx.shadowBlur  = isSelected ? 20 : 10 * pulse;
+            this.ctx.shadowColor = trigger.color || '#00d9ff';
+            this.ctx.fillStyle   = trigger.color || '#00d9ff';
+            this.ctx.globalAlpha = 0.85;
+            this.ctx.fillRect(trigger.x, trigger.y, trigger.width, trigger.height);
+            this.ctx.globalAlpha = 1;
+            this.ctx.shadowBlur  = 0;
+
+            // Ícono centrado
+            this.ctx.font      = '22px Arial';
+            this.ctx.fillStyle = '#fff';
+            this.ctx.textAlign = 'center';
+            this.ctx.fillText(trigger.icon || '▶', trigger.x + trigger.width / 2, trigger.y + trigger.height / 2 + 8);
+            this.ctx.textAlign = 'left';
+
+            // Label con acción + targetId
+            this.ctx.font      = '10px Arial';
+            this.ctx.fillStyle = '#fff';
+            this.ctx.fillText(`${trigger.action}`, trigger.x + 2, trigger.y - 14);
+            this.ctx.fillStyle = '#FFD700';
+            this.ctx.fillText(`#${trigger.targetId}`, trigger.x + 2, trigger.y - 4);
+
+            this.ctx.strokeStyle = isSelected ? '#FFD700' : '#fff';
+            this.ctx.lineWidth   = isSelected ? 3 : 1.5;
+            this.ctx.strokeRect(trigger.x, trigger.y, trigger.width, trigger.height);
+        });
+
         // Dibujar secciones
         this.sections.forEach(section => {
             const isSelected = this.selectedItem?.item === section;
@@ -975,6 +1144,10 @@ export const levelConfig = {
     
     exitPortals: ${JSON.stringify(this.exitPortals, null, 8).replace(/"([^"]+)":/g, '$1:')},
     
+    triggers: ${JSON.stringify(this.triggers, null, 8).replace(/"([^"]+)":/g, '$1:')},
+
+    zones: ${JSON.stringify(this.zones, null, 8).replace(/"([^"]+)":/g, '$1:')},
+
     sections: ${JSON.stringify(this.sections, null, 8).replace(/"([^"]+)":/g, '$1:')}
 };`;
         
